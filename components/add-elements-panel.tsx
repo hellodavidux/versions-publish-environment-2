@@ -81,6 +81,7 @@ import AirtableIcon from "./AirtableIcon"
 import AppIcon from "./AppIcon"
 import nodesData from "@/nodes.json"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Kbd } from "@/components/ui/kbd"
 import type { SelectedAction, AppDetail, Category } from "@/lib/types"
 
 // =============================================================================
@@ -914,7 +915,9 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
       <div className={`grid ${source === "sidebar" ? "grid-cols-1" : "grid-cols-2"} gap-0.5`}>
         {/* Popular Tools Column */}
         <div>
-          <h4 className="text-muted-foreground mb-2 text-sm font-light">Popular</h4>
+          <div className="sticky top-0 z-10 bg-background py-1 mb-2">
+            <h4 className="text-muted-foreground text-sm font-light">Popular</h4>
+          </div>
           <div className="space-y-0.5">
             {popularTools.map((tool) => {
               const actionData: SelectedAction = {
@@ -969,7 +972,9 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
 
         {/* Popular Apps Column */}
         <div className={source === "sidebar" ? "mt-4" : ""}>
-          <h4 className="text-muted-foreground mb-2 text-sm font-light">Most used apps</h4>
+          <div className="sticky top-0 z-10 bg-background py-1 mb-2">
+            <h4 className="text-muted-foreground text-sm font-light">Most used apps</h4>
+          </div>
           <div className="space-y-0.5">
             {popularApps.map((app) => {
               const details = appDetails[app.name]
@@ -1098,8 +1103,13 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
     return (
     <div className="p-3 py-0">
         <div className="space-y-3">
-          {/* AI Agent and Knowledge Base at the top */}
+          {/* Core Nodes section */}
           <div>
+            <div className="sticky top-0 z-10 bg-background py-1 mb-1">
+              <div className="px-3 text-sm font-light text-muted-foreground">
+                <span>Core Nodes</span>
+              </div>
+            </div>
             <div className="space-y-0.5 px-2">
               {topItems.map((item) => {
                 const actionData: SelectedAction = {
@@ -1202,7 +1212,9 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
       <div className={`grid ${source === "sidebar" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
         {/* Built-in Triggers Column */}
         <div>
-          <h4 className="text-muted-foreground mb-2 text-sm font-light">Built-in Triggers</h4>
+          <div className="sticky top-0 z-10 bg-background py-1 mb-2">
+            <h4 className="text-muted-foreground text-sm font-light">Built-in Triggers</h4>
+          </div>
           <div className="space-y-0.5 px-0">
             {builtInTriggers.map((item) => {
               const actionData: SelectedAction = {
@@ -1246,7 +1258,9 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
 
         {/* App Triggers Column */}
         <div>
-          <h4 className="text-muted-foreground mb-2 text-sm font-light">App Triggers</h4>
+          <div className="sticky top-0 z-10 bg-background py-1 mb-2">
+            <h4 className="text-muted-foreground text-sm font-light">App Triggers</h4>
+          </div>
           <div className="space-y-0.5 px-0">
             {appTriggers.map((app) => {
               const details = appDetails[app.name]
@@ -1402,23 +1416,14 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
 
     return (
       <div className="animate-in fade-in duration-300">
-        {/* Back button and app header */}
-        <div className="px-3 border-border/50 bg-background sticky top-0 z-40 py-0 border-b-0">
-          <button
-            onClick={() => setSelectedApp(null)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-0.5 pb-2"
-          >
-            <ChevronDown className="w-4 h-4 rotate-90" />
-            <span className="text-sm">Back</span>
-          </button>
-        </div>
-
         {/* Triggers Section */}
         {details.triggers.length > 0 && (
           <div className="mt-1">
-            <div className="px-3 py-1 flex items-center gap-2 text-sm font-light text-muted-foreground lowercase">
-              <Zap className="w-3.5 h-3.5" />
-              <span>Triggers</span>
+            <div className="sticky top-0 z-10 bg-background py-1">
+              <div className="px-3 flex items-center gap-2 text-sm font-light text-muted-foreground lowercase">
+                <Zap className="w-3.5 h-3.5" />
+                <span>Triggers</span>
+              </div>
             </div>
             <div className="space-y-0.5 px-2 pl-6">
               {details.triggers.map((trigger) => (
@@ -1445,9 +1450,11 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
         {/* Action Groups */}
         {details.actionGroups.map((group) => (
           <div key={group.name} className="mt-2">
-            <div className="px-3 py-1 flex items-center gap-2 text-sm font-light text-muted-foreground lowercase">
-              <Play className="w-3.5 h-3.5" />
-              <span>{group.name}</span>
+            <div className="sticky top-0 z-10 bg-background py-1">
+              <div className="px-3 flex items-center gap-2 text-sm font-light text-muted-foreground lowercase">
+                <Play className="w-3.5 h-3.5" />
+                <span>{group.name}</span>
+              </div>
             </div>
             <div className="space-y-0.5 px-2 pl-6">
               {group.items.map((action) => (
@@ -1946,14 +1953,24 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
           {/* Header with search */}
           <div className="sticky top-0 z-10 bg-background border-b border-border/30 flex-shrink-0">
             <div className="flex items-center gap-2 px-3 py-2.5">
+              {/* Back button - only show when in sublevel */}
+              {selectedApp && (
+                <button
+                  onClick={() => setSelectedApp(null)}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-white hover:bg-muted/50 transition-colors flex-shrink-0"
+                >
+                  <ChevronDown className="w-4 h-4 rotate-90 text-muted-foreground" />
+                </button>
+              )}
               <div className={`relative ${source === "sidebar" ? "flex-1" : "flex-1"}`}>
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Search nodes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
-                  className={`w-full ${searchQuery ? "pl-3 pr-8" : source === "sidebar" ? "pl-3 pr-10" : "pl-3 pr-8"} py-1 text-sm bg-muted/50 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-ring`}
+                  className={`w-full ${searchQuery ? "pl-9 pr-8" : source === "sidebar" ? "pl-9 pr-8" : "pl-9 pr-12"} py-1 text-sm bg-muted/50 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-ring`}
                 />
                 {searchQuery && (
                   <button
@@ -1962,6 +1979,15 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   >
                     <X className="w-3.5 h-3.5 group-hover:text-foreground transition-colors animate-in spin-in-180 duration-200 text-ring" />
                   </button>
+                )}
+                {/* Command icon K - only show when not in sidebar */}
+                {source !== "sidebar" && !searchQuery && (
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Kbd className="h-5 px-1.5 text-xs flex items-center gap-0.5">
+                      <span>⌘</span>
+                      <span>K</span>
+                    </Kbd>
+                  </div>
                 )}
               </div>
               {/* Pin button - only show for sidebar source */}
@@ -2234,77 +2260,6 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     </div>
                   )}
 
-                  {/* Actions by App Section */}
-                  {searchResults.actions.length > 0 && (
-                    <div className="mb-4">
-                      <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Actions
-                      </div>
-                      {Object.entries(
-                        searchResults.actions.reduce((acc, action) => {
-                          if (!acc[action.appName]) {
-                            acc[action.appName] = []
-                          }
-                          acc[action.appName].push(action)
-                          return acc
-                        }, {} as Record<string, Array<{ appName: string; actionName: string; description: string; groupName: string }>>)
-                      ).map(([appName, actions]) => {
-                        const appItem = [...popularApps, ...otherApps].find((app) => app.name === appName)
-                        return (
-                          <div key={`actions-${appName}`} className="mb-3">
-                            <div className="px-3 py-1 flex items-center gap-2 text-sm font-light text-muted-foreground">
-                              <ItemIcon type={appItem?.icon || "box"} appName={appName} />
-                              <span className="lowercase">{appName}</span>
-                            </div>
-                            <div className="space-y-0.5 px-2 pl-6">
-                              {actions.map((action) => {
-                                const uniqueKey = `action-${appName}-${action.actionName}`
-                                const actionData: SelectedAction = {
-                                  appName: appName,
-                                  actionName: action.actionName,
-                                  description: action.description,
-                                  type: "action",
-                                }
-
-                                if (source === "sidebar") {
-                                  return (
-                                    <DraggableItem key={uniqueKey} data={actionData} className="group/item">
-                                      <div className="flex items-center justify-between py-1.5 pl-3 pr-3 text-sm cursor-grab hover:bg-accent/50 transition-colors min-w-0 overflow-hidden">
-                                        <div className="flex items-center gap-2 text-foreground min-w-0 flex-1 overflow-hidden">
-                                          <div className="flex-shrink-0">
-                                            <ItemIcon type={appItem?.icon || "box"} appName={appName} />
-                                          </div>
-                                          <span className="text-sm font-medium truncate min-w-0">{action.actionName}</span>
-                                        </div>
-                                        <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
-                                      </div>
-                                    </DraggableItem>
-                                  )
-                                }
-
-                                return (
-                                  <DraggableItem
-                                    key={uniqueKey}
-                                    data={actionData}
-                                    onClick={() => handleActionClick(appName, { name: action.actionName, description: action.description })}
-                                    className="group/item"
-                                  >
-                                    <div className={`flex items-center gap-2.5 py-1 px-2 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
-                                      selectedAction === action.actionName ? "bg-accent/40" : ""
-                                    }`}>
-                                      <ItemIcon type={appItem?.icon || "box"} appName={appName} />
-                                      <span className="text-foreground truncate font-medium">{action.actionName}</span>
-                                    </div>
-                                  </DraggableItem>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
                   {/* Triggers Section */}
                   {searchResults.triggers.length > 0 && (
                     <div className="mb-4">
@@ -2365,6 +2320,77 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                     }`}>
                                       <ItemIcon type={appItem?.icon || "box"} appName={appName} />
                                       <span className="text-foreground truncate font-medium">{trigger.triggerName}</span>
+                                    </div>
+                                  </DraggableItem>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* Actions by App Section */}
+                  {searchResults.actions.length > 0 && (
+                    <div className="mb-4">
+                      <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Actions
+                      </div>
+                      {Object.entries(
+                        searchResults.actions.reduce((acc, action) => {
+                          if (!acc[action.appName]) {
+                            acc[action.appName] = []
+                          }
+                          acc[action.appName].push(action)
+                          return acc
+                        }, {} as Record<string, Array<{ appName: string; actionName: string; description: string; groupName: string }>>)
+                      ).map(([appName, actions]) => {
+                        const appItem = [...popularApps, ...otherApps].find((app) => app.name === appName)
+                        return (
+                          <div key={`actions-${appName}`} className="mb-3">
+                            <div className="px-3 py-1 flex items-center gap-2 text-sm font-light text-muted-foreground">
+                              <ItemIcon type={appItem?.icon || "box"} appName={appName} />
+                              <span className="lowercase">{appName}</span>
+                            </div>
+                            <div className="space-y-0.5 px-2 pl-6">
+                              {actions.map((action) => {
+                                const uniqueKey = `action-${appName}-${action.actionName}`
+                                const actionData: SelectedAction = {
+                                  appName: appName,
+                                  actionName: action.actionName,
+                                  description: action.description,
+                                  type: "action",
+                                }
+
+                                if (source === "sidebar") {
+                                  return (
+                                    <DraggableItem key={uniqueKey} data={actionData} className="group/item">
+                                      <div className="flex items-center justify-between py-1.5 pl-3 pr-3 text-sm cursor-grab hover:bg-accent/50 transition-colors min-w-0 overflow-hidden">
+                                        <div className="flex items-center gap-2 text-foreground min-w-0 flex-1 overflow-hidden">
+                                          <div className="flex-shrink-0">
+                                            <ItemIcon type={appItem?.icon || "box"} appName={appName} />
+                                          </div>
+                                          <span className="text-sm font-medium truncate min-w-0">{action.actionName}</span>
+                                        </div>
+                                        <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
+                                      </div>
+                                    </DraggableItem>
+                                  )
+                                }
+
+                                return (
+                                  <DraggableItem
+                                    key={uniqueKey}
+                                    data={actionData}
+                                    onClick={() => handleActionClick(appName, { name: action.actionName, description: action.description })}
+                                    className="group/item"
+                                  >
+                                    <div className={`flex items-center gap-2.5 py-1 px-2 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
+                                      selectedAction === action.actionName ? "bg-accent/40" : ""
+                                    }`}>
+                                      <ItemIcon type={appItem?.icon || "box"} appName={appName} />
+                                      <span className="text-foreground truncate font-medium">{action.actionName}</span>
                                     </div>
                                   </DraggableItem>
                                 )
@@ -2448,8 +2474,10 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                           ) : (
                             <>
                               {/* Popular apps section */}
-                              <div className="px-3 font-light text-muted-foreground text-sm py-1.5 my-0 lowercase">
-                                Most used apps
+                              <div className="sticky top-0 z-10 bg-background py-1.5 my-0">
+                                <div className="px-3 font-light text-muted-foreground text-sm lowercase">
+                                  Most used apps
+                                </div>
                               </div>
                               {popularApps.map((item) => {
                                 const uniqueKey = `popular-${item.name}`
@@ -2485,12 +2513,12 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div key={uniqueKey} className="group/item">
                                     <div
                                       onClick={() => handleItemClick(category.name, item)}
-                                      className={`flex items-center justify-between py-1.5 px-2 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
+                                      className={`flex items-center justify-between py-2 px-4 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
                                         selectedAction === item.name && !details ? "bg-accent/40" : ""
                                       }`}
                                     >
                                       <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
-                                        <ItemIcon type={item.icon} />
+                                        <ItemIcon type={item.icon} appName={item.name} />
                                         <span className="text-sm font-medium">{item.name}</span>
                                       </div>
                                       {details && (
@@ -2502,8 +2530,10 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               })}
                               
                               {/* Other apps section */}
-                              <div className="px-3 font-light text-muted-foreground text-sm py-1.5 my-0 lowercase mt-2">
-                                Other apps
+                              <div className="sticky top-0 z-10 bg-background py-1.5 my-0 mt-2">
+                                <div className="px-3 font-light text-muted-foreground text-sm lowercase">
+                                  Other apps
+                                </div>
                               </div>
                               {otherApps.map((item) => {
                                 const uniqueKey = `other-${item.name}`
@@ -2525,7 +2555,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                       <div className="flex items-center justify-between py-1.5 pl-3 pr-3 text-sm cursor-grab hover:bg-accent/50 transition-colors min-w-0 overflow-hidden">
                                         <div className="flex items-center gap-2 text-foreground min-w-0 flex-1 overflow-hidden">
                                           <div className="flex-shrink-0">
-                                            <ItemIcon type={item.icon} />
+                                            <ItemIcon type={item.icon} appName={item.name} />
                                           </div>
                                           <span className="text-sm font-medium truncate min-w-0">{item.name}</span>
                                         </div>
@@ -2539,12 +2569,12 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div key={uniqueKey} className="group/item">
                                     <div
                                       onClick={() => handleItemClick(category.name, item)}
-                                      className={`flex items-center justify-between py-1.5 px-2 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
+                                      className={`flex items-center justify-between py-2 px-4 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
                                         selectedAction === item.name && !details ? "bg-accent/40" : ""
                                       }`}
                                     >
                                       <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
-                                        <ItemIcon type={item.icon} />
+                                        <ItemIcon type={item.icon} appName={item.name} />
                                         <span className="text-sm font-medium">{item.name}</span>
                                       </div>
                                       {details && (
@@ -2609,12 +2639,12 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div key={uniqueKey} className="group/item">
                                     <div
                                       onClick={() => handleItemClick(category.name, item)}
-                                      className={`flex items-center justify-between py-1.5 px-2 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
+                                      className={`flex items-center justify-between py-2 px-4 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
                                         selectedAction === item.name && !details ? "bg-accent/40" : ""
                                       }`}
                                     >
                                       <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
-                                        <ItemIcon type={item.icon} />
+                                        <ItemIcon type={item.icon} appName={item.name} />
                                         <span className="text-sm font-medium">{item.name}</span>
                                       </div>
                                       {details && (
@@ -2667,7 +2697,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                       <div key={uniqueKey} className="group/item">
                                         <div
                                           onClick={() => handleItemClick(category.name, item)}
-                                          className={`flex items-center justify-between py-1.5 px-2 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
+                                          className={`flex items-center justify-between py-2 px-4 rounded-md text-sm cursor-pointer hover:bg-accent/50 transition-colors ${
                                             selectedAction === item.name && !details ? "bg-accent/40" : ""
                                           }`}
                                         >

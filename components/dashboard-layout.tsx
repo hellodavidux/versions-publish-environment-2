@@ -191,17 +191,6 @@ export function DashboardLayout({ children, onActionSelect, onOpenNodeSelector }
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="flex h-9 w-9 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                    <Search className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8} hideArrow>
-                  <span>Search</span>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="flex h-9 w-9 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                     <Home className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>

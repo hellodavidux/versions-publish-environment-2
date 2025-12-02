@@ -369,6 +369,32 @@ function FlowCanvas({
     ;(window as any).__openNodeSelector = handleOpenNodeSelector
   }, [])
 
+  // Handle Command+K keyboard shortcut to open node selector
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check for Command+K (Mac) or Ctrl+K (Windows/Linux)
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault()
+        
+        // Get viewport center position
+        const viewportWidth = window.innerWidth - 48 // Subtract sidebar width
+        const viewportHeight = window.innerHeight - 56 // Subtract top bar height
+        const centerX = viewportWidth / 2
+        const centerY = viewportHeight / 2
+        
+        // Open node selector at center of viewport
+        if (onOpenNodeSelectorRef.current) {
+          onOpenNodeSelectorRef.current({ x: centerX, y: centerY }, "handle")
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onOpenNodeSelectorRef])
+
   useEffect(() => {
     if (!isInitialized) {
       // Center the default workflow node on the canvas
