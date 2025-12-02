@@ -1858,7 +1858,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
   return (
     <TooltipProvider delayDuration={100}>
       <div className={`bg-card rounded-xl border border-border shadow-lg flex overflow-hidden group ${
-        source === "sidebar" ? "w-[280px] h-[520px]" : "w-[420px] h-[312px]"
+        source === "sidebar" ? "w-[280px] h-[584px]" : "w-[420px] h-[312px]"
       }`}>
         {/* Sidebar with category tabs */}
         <div className="w-12 border-border/30 flex flex-col items-center py-2 flex-shrink-0 leading-3 h-auto border-r gap-0.5 relative">
