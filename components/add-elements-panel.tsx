@@ -34,6 +34,45 @@ import {
   Pin,
   PinOff,
 } from "lucide-react"
+
+// Workflow icon component for Logic tab
+const WorkflowIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="8" height="8" x="3" y="3" rx="2" />
+    <path d="M7 11v4a2 2 0 0 0 2 2h4" />
+    <rect width="8" height="8" x="13" y="13" rx="2" />
+  </svg>
+)
+
+// Arrow Big Right Dash icon component for Actions & Outputs tab
+const ArrowBigRightDashIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M11 9a1 1 0 0 0 1-1V5.061a1 1 0 0 1 1.811-.75l6.836 6.836a1.207 1.207 0 0 1 0 1.707l-6.836 6.835a1 1 0 0 1-1.811-.75V16a1 1 0 0 0-1-1H9a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" />
+    <path d="M4 9v6" />
+  </svg>
+)
 import SlackIconComponent from "./SlackIcon"
 import StackAIIcon from "./StackAIIcon"
 import AnthropicIcon from "./AnthropicIcon"
@@ -494,9 +533,9 @@ const appTriggers = [
 // Sidebar tab configuration with descriptions for tooltips
 const categoryTabs = [
   { name: "Triggers", key: "Triggers", icon: Zap },
-  { name: "Actions & Outputs", key: "Core Nodes", icon: StackAIIcon },
+  { name: "Actions & Outputs", key: "Core Nodes", icon: ArrowBigRightDashIcon },
   { name: "Apps", key: "Apps", icon: Blocks },
-  { name: "Logic", key: "Logic", icon: Code },
+  { name: "Logic", key: "Logic", icon: WorkflowIcon },
   { name: "Utils", key: "Utils", icon: Wrench },
 ]
 
@@ -1687,11 +1726,9 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
       return bScore - aScore
     })
 
-    // Deduplicate actions - if an action name appears in coreActions, remove it from actions
-    const coreActionNames = new Set(matchingCoreActions.map(action => action.name.toLowerCase()))
-    const uniqueActions = matchingActions.filter(action => 
-      !coreActionNames.has(action.actionName.toLowerCase())
-    )
+    // Don't deduplicate actions - show both core actions and app actions even if they have the same name
+    // They're from different sources (StackAI vs apps like Gmail/Outlook)
+    const uniqueActions = matchingActions
 
     // Sort apps by relevance score
     const sortedApps = [...matchingApps].sort((a, b) => {
