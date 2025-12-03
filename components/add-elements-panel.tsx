@@ -102,7 +102,7 @@ import AppIcon from "./AppIcon"
 import nodesData from "@/nodes.json"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Kbd } from "@/components/ui/kbd"
-import type { SelectedAction, AppDetail, Category } from "@/lib/types"
+import type { SelectedAction, AppDetail, Category, CategoryItem } from "@/lib/types"
 
 // =============================================================================
 // DATA: App details with triggers and actions
@@ -993,7 +993,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     <div className="flex items-center justify-between gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <ItemIcon type={tool.icon} muted appName={tool.name} />
-                        <span className="text-foreground truncate font-medium">{tool.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{tool.name}</span>
               </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
           </div>
@@ -1015,7 +1015,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
               >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
                 <ItemIcon type={tool.icon} muted />
-                <span className="text-foreground truncate font-medium min-w-0">{tool.name}</span>
+                <span className="text-sm text-foreground truncate font-medium min-w-0">{tool.name}</span>
                   </div>
                   {toolDetails && (
                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -1052,7 +1052,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     <div className="flex items-center justify-between gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <ItemIcon type={app.icon} muted />
-                        <span className="text-foreground truncate font-medium">{app.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{app.name}</span>
       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
     </div>
@@ -1072,7 +1072,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   >
                     <div className="flex items-center gap-2.5">
                       <ItemIcon type={app.icon} muted appName={app.name} />
-                      <span className="text-foreground truncate font-medium">{app.name}</span>
+                      <span className="text-sm text-foreground truncate font-medium">{app.name}</span>
                     </div>
                     {details && (
                       <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
@@ -1192,7 +1192,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                               <ItemIcon type={item.icon} appName={item.name} />
                         </div>
-                            <span className="text-foreground truncate font-medium min-w-0">{item.name}</span>
+                            <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                     </div>
@@ -1211,7 +1211,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                         <ItemIcon type={item.icon} appName={item.name} />
                         </div>
-                      <span className="text-foreground truncate font-medium min-w-0 flex-1">{item.name}</span>
+                      <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{item.name}</span>
                       </div>
                   )
                 })}
@@ -1247,7 +1247,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                                 <ItemIcon type={tool.icon} />
                         </div>
-                              <span className="text-foreground truncate font-medium min-w-0">{tool.name}</span>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{tool.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                     </div>
@@ -1264,7 +1264,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                           <ItemIcon type={tool.icon} />
         </div>
-                        <span className="text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
                       </div>
                     )
                   })}
@@ -1301,11 +1301,11 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={tool.icon} />
                               </div>
-                              <span className="text-foreground truncate font-medium min-w-0">{tool.name}</span>
-                            </div>
-                            <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
-                          </div>
-                        </DraggableItem>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{tool.name}</span>
+                      </div>
+                      <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
+                    </div>
+                  </DraggableItem>
                       )
                     }
                     
@@ -1318,7 +1318,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                           <ItemIcon type={tool.icon} />
         </div>
-                        <span className="text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
                       </div>
                     )
                   })}
@@ -1355,11 +1355,11 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={tool.icon} />
               </div>
-                              <span className="text-foreground truncate font-medium min-w-0">{tool.name}</span>
-                            </div>
-                            <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
-                          </div>
-                        </DraggableItem>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{tool.name}</span>
+                      </div>
+                      <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
+                    </div>
+                  </DraggableItem>
                       )
                     }
                     
@@ -1371,8 +1371,8 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                       >
                         <div className="flex-shrink-0">
                           <ItemIcon type={tool.icon} />
-                        </div>
-                        <span className="text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
+        </div>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
                       </div>
                     )
                   })}
@@ -1409,11 +1409,11 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={tool.icon} />
                               </div>
-                              <span className="text-foreground truncate font-medium min-w-0">{tool.name}</span>
-                            </div>
-                            <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
-                          </div>
-                        </DraggableItem>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{tool.name}</span>
+                      </div>
+                      <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
+                    </div>
+                  </DraggableItem>
                       )
                     }
                     
@@ -1425,8 +1425,8 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                       >
                         <div className="flex-shrink-0">
                           <ItemIcon type={tool.icon} />
-                        </div>
-                        <span className="text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
+        </div>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
                       </div>
                     )
                   })}
@@ -1463,11 +1463,11 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={tool.icon} />
                               </div>
-                              <span className="text-foreground truncate font-medium min-w-0">{tool.name}</span>
-                            </div>
-                            <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
-                          </div>
-                        </DraggableItem>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{tool.name}</span>
+                      </div>
+                      <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
+                    </div>
+                  </DraggableItem>
                       )
                     }
                     
@@ -1479,8 +1479,8 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                       >
                         <div className="flex-shrink-0">
                           <ItemIcon type={tool.icon} />
-                        </div>
-                        <span className="text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
+        </div>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
                       </div>
                     )
                   })}
@@ -1521,7 +1521,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                           <div className="flex-shrink-0">
                             <ItemIcon type={tool.icon} />
                           </div>
-                          <span className="text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
+                          <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{tool.name}</span>
                     </div>
                   )
                 })}
@@ -1568,7 +1568,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                             <div className="flex-shrink-0">
                         <ItemIcon type={item.icon} appName={item.name} />
                             </div>
-                      <span className="text-foreground truncate font-medium min-w-0">{item.name}</span>
+                      <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                           </div>
                           <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                         </div>
@@ -1585,7 +1585,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                 <div className="flex-shrink-0">
                   <ItemIcon type={item.icon} appName={item.name} />
                 </div>
-                <span className="text-foreground truncate font-medium min-w-0 flex-1">{item.name}</span>
+                <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{item.name}</span>
                     </div>
                   )
                 })}
@@ -1627,7 +1627,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                           <ItemIcon type={item.icon} appName={item.name} />
                         </div>
-                        <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                     </div>
@@ -1645,7 +1645,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   >
                     <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                       <ItemIcon type={item.icon} appName={item.name} />
-                      <span className="text-xs font-medium">{item.name}</span>
+                      <span className="text-sm text-foreground font-medium">{item.name}</span>
                     </div>
                     {details && (
                       <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -1685,7 +1685,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         <div className="flex-shrink-0">
                           <ItemIcon type={item.icon} appName={item.name} />
                         </div>
-                        <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                     </div>
@@ -1703,7 +1703,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   >
                     <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                       <ItemIcon type={item.icon} appName={item.name} />
-                      <span className="text-xs font-medium">{item.name}</span>
+                      <span className="text-sm text-foreground font-medium">{item.name}</span>
                     </div>
                     {details && (
                       <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -1734,7 +1734,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
               </div>
             </div>
             <div className="space-y-0.5 px-2 min-w-0">
-              {utilsCategory.items.slice(0, 4).map((item) => {
+              {utilsCategory.items.slice(0, 4).map((item: CategoryItem) => {
                 const uniqueKey = `Utils-${item.name}`
                 const details = appDetails[item.name]
                 const actionData: SelectedAction = {
@@ -1756,7 +1756,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                           <div className="flex-shrink-0">
                             <ItemIcon type={item.icon} />
                           </div>
-                          <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                          <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                         </div>
                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                       </div>
@@ -1774,7 +1774,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     >
                       <div className="flex items-center gap-2.5 text-foreground min-w-0 flex-1 overflow-hidden">
                         <ItemIcon type={item.icon} appName={item.name} />
-                        <span className="text-xs font-medium truncate">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                       </div>
                       {details && (
                         <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -1794,7 +1794,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   </div>
                 </div>
                 <div className="space-y-0.5 px-2 min-w-0">
-                  {utilsCategory.utilsCategories["Databases"].map((item) => {
+                  {utilsCategory.utilsCategories["Databases"].map((item: CategoryItem) => {
                     const uniqueKey = `Utils-Databases-${item.name}`
                     const details = appDetails[item.name]
                     const actionData: SelectedAction = {
@@ -1816,7 +1816,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={item.icon} appName={item.name} />
                               </div>
-                              <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                             </div>
                             <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                           </div>
@@ -1834,7 +1834,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                         >
                           <div className="flex items-center gap-2.5 text-foreground min-w-0 flex-1 overflow-hidden">
                             <ItemIcon type={item.icon} appName={item.name} />
-                            <span className="text-xs font-medium truncate">{item.name}</span>
+                            <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                           </div>
                           {details && (
                             <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -1857,7 +1857,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                 </div>
               </div>
               <div className="space-y-0.5 px-2 min-w-0">
-                {utilsCategory.utilsCategories["Miscellaneous"].map((item) => {
+                {utilsCategory.utilsCategories["Miscellaneous"].map((item: CategoryItem) => {
                   const uniqueKey = `Utils-Miscellaneous-${item.name}`
                   const details = appDetails[item.name]
                   const actionData: SelectedAction = {
@@ -1865,26 +1865,6 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     actionName: item.name,
                     description: nodeDescriptions[item.name] || `${item.name} node`,
                     type: "action",
-                  }
-
-                  if (source === "sidebar") {
-                    return (
-                      <DraggableItem
-                        key={uniqueKey}
-                        data={actionData}
-                        className="group/item"
-                      >
-                        <div className="flex items-center justify-between py-1.5 pl-3 pr-3 text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0 overflow-hidden">
-                          <div className="flex items-center gap-2 text-foreground min-w-0 flex-1 overflow-hidden">
-                            <div className="flex-shrink-0">
-                              <ItemIcon type={item.icon} appName={item.name} />
-                            </div>
-                            <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
-                          </div>
-                          <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
-                        </div>
-                      </DraggableItem>
-                    )
                   }
 
                   return (
@@ -1897,7 +1877,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                       >
                         <div className="flex items-center gap-2.5 text-foreground min-w-0 flex-1 overflow-hidden">
                           <ItemIcon type={item.icon} appName={item.name} />
-                          <span className="text-xs font-medium truncate">{item.name}</span>
+                          <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                         </div>
                         {details && (
                           <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -1919,7 +1899,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                 </div>
               </div>
               <div className="space-y-0.5 px-2 min-w-0">
-                {utilsCategory.utilsCategories["Miscellaneous"].map((item) => {
+                {utilsCategory.utilsCategories["Miscellaneous"].map((item: CategoryItem) => {
                   const uniqueKey = `Utils-Miscellaneous-${item.name}`
                   const actionData: SelectedAction = {
                     appName: item.name,
@@ -1939,7 +1919,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                           <div className="flex-shrink-0">
                             <ItemIcon type={item.icon} appName={item.name} />
                           </div>
-                          <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                          <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                         </div>
                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                       </div>
@@ -1984,7 +1964,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     <div className="flex items-center justify-between gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <ItemIcon type={item.icon} appName={item.name} />
-                        <span className="text-foreground truncate font-medium">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
                     </div>
@@ -1999,7 +1979,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                 className="flex items-center gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-pointer hover:bg-accent/50 transition-colors"
               >
                       <ItemIcon type={item.icon} appName={item.name} />
-                <span className="text-foreground truncate font-medium">{item.name}</span>
+                <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
               </div>
               )
             })}
@@ -2030,7 +2010,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     <div className="flex items-center justify-between gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <ItemIcon type={item.icon} appName={item.name} />
-                        <span className="text-foreground truncate font-medium">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
                     </div>
@@ -2045,7 +2025,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                       className="flex items-center gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-pointer hover:bg-accent/50 transition-colors"
               >
                 <ItemIcon type={item.icon} />
-                <span className="text-foreground truncate font-medium">{item.name}</span>
+                <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
               </div>
               )
             })}
@@ -2081,7 +2061,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   >
                     <div className="flex items-center gap-2.5">
                           <ItemIcon type={app.icon} muted appName={app.name} />
-                      <span className="text-foreground truncate font-medium">{app.name}</span>
+                      <span className="text-sm text-foreground truncate font-medium">{app.name}</span>
                     </div>
                     {details && (
                       <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
@@ -2123,7 +2103,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     <div className="flex items-center justify-between gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <ItemIcon type={item.icon} appName={item.name} />
-                        <span className="text-foreground truncate font-medium">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
     </div>
@@ -2138,7 +2118,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   className="flex items-center gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-pointer hover:bg-accent/50 transition-colors"
                 >
                   <ItemIcon type={item.icon} appName={item.name} />
-                  <span className="text-foreground truncate font-medium">{item.name}</span>
+                  <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                 </div>
               )
             })}
@@ -2167,7 +2147,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     <div className="flex items-center justify-between gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-grab hover:bg-accent/50 transition-colors min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <ItemIcon type={item.icon} appName={item.name} />
-                        <span className="text-foreground truncate font-medium">{item.name}</span>
+                        <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                       </div>
                       <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none" />
                     </div>
@@ -2182,7 +2162,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   className="flex items-center gap-2.5 py-1.5 px-2 rounded-md text-xs cursor-pointer hover:bg-accent/50 transition-colors"
                 >
                   <ItemIcon type={item.icon} appName={item.name} />
-                  <span className="text-foreground truncate font-medium">{item.name}</span>
+                  <span className="text-sm text-foreground truncate font-medium">{item.name}</span>
                 </div>
               )
             })}
@@ -2713,7 +2693,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                   arrowClassName="bg-white fill-white border-border/50"
                   onPointerEnter={(e) => e.preventDefault()}
                 >
-                  <span className="text-xs font-medium">{tab.name}</span>
+                  <span className="text-sm text-foreground font-medium">{tab.name}</span>
                 </TooltipContent>
               </Tooltip>
             )
@@ -2799,7 +2779,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                     className="bg-white text-foreground border border-border/50 shadow-md px-2 py-1.5 rounded-lg"
                     arrowClassName="bg-white fill-white border-border/50"
                   >
-                    <span className="text-xs font-medium">{isPinned ? "Unpin" : "Pin"}</span>
+                    <span className="text-sm text-foreground font-medium">{isPinned ? "Unpin" : "Pin"}</span>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -2855,7 +2835,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div className="flex-shrink-0">
                                     <ItemIcon type={action.icon} />
                                   </div>
-                              <span className="text-xs font-medium truncate min-w-0">{action.name}</span>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0">{action.name}</span>
                                 </div>
                                 <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                               </div>
@@ -2876,7 +2856,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={action.icon} />
                               </div>
-                              <span className="text-foreground truncate font-medium min-w-0 flex-1">{action.name}</span>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{action.name}</span>
                             </div>
                           </DraggableItem>
                         )
@@ -2911,7 +2891,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div className="flex-shrink-0">
                                     <ItemIcon type={item.icon} />
                                   </div>
-                                  <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                  <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                 </div>
                                 <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                               </div>
@@ -2940,7 +2920,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                               <div className="flex-shrink-0">
                                 <ItemIcon type={item.icon} />
                               </div>
-                              <span className="text-foreground truncate font-medium min-w-0 flex-1">{item.name}</span>
+                              <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{item.name}</span>
                             </div>
                           </DraggableItem>
                         )
@@ -2976,7 +2956,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div className="flex-shrink-0">
                                     <ItemIcon type={app.icon} appName={app.name} />
                                   </div>
-                                  <span className="text-xs font-medium truncate min-w-0">{app.name}</span>
+                                  <span className="text-sm text-foreground truncate font-medium min-w-0">{app.name}</span>
                                 </div>
                                 <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                               </div>
@@ -2996,7 +2976,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                 <div className="flex-shrink-0">
                                   <ItemIcon type={app.icon} appName={app.name} />
                                 </div>
-                                <span className="text-xs font-medium truncate min-w-0">{app.name}</span>
+                                <span className="text-sm text-foreground truncate font-medium min-w-0">{app.name}</span>
                               </div>
                               {details && (
                                 <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3035,7 +3015,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                     <div className="flex-shrink-0">
                                       <ItemIcon type="book" />
                                     </div>
-                                    <span className="text-xs font-medium truncate min-w-0">{action.actionName}</span>
+                                    <span className="text-sm text-foreground truncate font-medium min-w-0">{action.actionName}</span>
                                   </div>
                                   <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                                 </div>
@@ -3056,7 +3036,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                 <div className="flex-shrink-0">
                                   <ItemIcon type="book" />
                                 </div>
-                                <span className="text-foreground truncate font-medium min-w-0 flex-1">{action.actionName}</span>
+                                <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{action.actionName}</span>
                               </div>
                             </DraggableItem>
                           )
@@ -3112,7 +3092,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                           <div className="flex-shrink-0">
                                             <ItemIcon type={appItem?.icon || "box"} appName={appName} />
                                           </div>
-                                          <span className="text-xs font-medium truncate min-w-0">{trigger.triggerName}</span>
+                                          <span className="text-sm text-foreground truncate font-medium min-w-0">{trigger.triggerName}</span>
                                         </div>
                                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                                       </div>
@@ -3133,7 +3113,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                       <div className="flex-shrink-0">
                                         <ItemIcon type={appItem?.icon || "box"} appName={appName} />
                                       </div>
-                                      <span className="text-foreground truncate font-medium min-w-0 flex-1">{trigger.triggerName}</span>
+                                      <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{trigger.triggerName}</span>
                                     </div>
                                   </DraggableItem>
                                 )
@@ -3189,7 +3169,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                           </div>
                                           <Tooltip>
                                             <TooltipTrigger asChild>
-                                              <span className="text-xs font-medium truncate min-w-0">{action.actionName}</span>
+                                              <span className="text-sm text-foreground truncate font-medium min-w-0">{action.actionName}</span>
                                             </TooltipTrigger>
                                             <TooltipContent>
                                               <p>{action.actionName}</p>
@@ -3215,7 +3195,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                       <div className="flex-shrink-0">
                                         <ItemIcon type={appItem?.icon || "box"} appName={appName} />
                                       </div>
-                                      <span className="text-foreground truncate font-medium min-w-0 flex-1">{action.actionName}</span>
+                                      <span className="text-sm text-foreground truncate font-medium min-w-0 flex-1">{action.actionName}</span>
                                     </div>
                                   </DraggableItem>
                                 )
@@ -3271,7 +3251,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                       </div>
                                       <Tooltip>
                                         <TooltipTrigger asChild>
-                                          <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                          <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                           <p>{item.name}</p>
@@ -3294,7 +3274,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                 >
                                   <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                     <ItemIcon type={item.icon} />
-                                    <span className="text-xs font-medium">{item.name}</span>
+                                    <span className="text-sm text-foreground font-medium">{item.name}</span>
                                   </div>
                                   {details && (
                                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3333,7 +3313,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                           <div className="flex-shrink-0">
                                             <ItemIcon type={item.icon} />
                                           </div>
-                                          <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                          <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                         </div>
                                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                                       </div>
@@ -3351,7 +3331,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                     >
                                       <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                         <ItemIcon type={item.icon} appName={item.name} />
-                                        <span className="text-xs font-medium">{item.name}</span>
+                                        <span className="text-sm text-foreground font-medium">{item.name}</span>
                                       </div>
                                       {details && (
                                         <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3389,7 +3369,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                           <div className="flex-shrink-0">
                                             <ItemIcon type={item.icon} appName={item.name} />
                                           </div>
-                                          <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                          <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                         </div>
                                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                                       </div>
@@ -3407,7 +3387,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                     >
                                       <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                         <ItemIcon type={item.icon} appName={item.name} />
-                                        <span className="text-xs font-medium">{item.name}</span>
+                                        <span className="text-sm text-foreground font-medium">{item.name}</span>
                                       </div>
                                       {details && (
                                         <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3461,7 +3441,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div className="flex-shrink-0">
                                     <ItemIcon type={item.icon} />
                                   </div>
-                                  <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                  <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                 </div>
                                 <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                               </div>
@@ -3479,7 +3459,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                             >
                               <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                           <ItemIcon type={item.icon} appName={item.name} />
-                                <span className="text-xs font-medium">{item.name}</span>
+                                <span className="text-sm text-foreground font-medium">{item.name}</span>
                               </div>
                               {details && (
                                 <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3497,7 +3477,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                         Databases
                     </div>
                                     </div>
-                                    {category.utilsCategories["Databases"].map((item) => {
+                                    {category.utilsCategories["Databases"].map((item: CategoryItem) => {
                                       const uniqueKey = `${category.name}-Databases-${item.name}`
                                       const details = appDetails[item.name]
                                       const actionData: SelectedAction = {
@@ -3519,7 +3499,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                                 <div className="flex-shrink-0">
                                                   <ItemIcon type={item.icon} appName={item.name} />
                                                 </div>
-                                                <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                                <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                               </div>
                                               <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                                             </div>
@@ -3537,7 +3517,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                           >
                                             <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                               <ItemIcon type={item.icon} appName={item.name} />
-                                              <span className="text-xs font-medium">{item.name}</span>
+                                              <span className="text-sm text-foreground font-medium">{item.name}</span>
                                             </div>
                                             {details && (
                                               <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3558,7 +3538,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                       Utils
                       </div>
                                   </div>
-                                  {category.utilsCategories["Miscellaneous"].map((item) => {
+                                  {category.utilsCategories["Miscellaneous"].map((item: CategoryItem) => {
                                     const uniqueKey = `${category.name}-Miscellaneous-${item.name}`
                                     const details = appDetails[item.name]
                         const actionData: SelectedAction = {
@@ -3578,7 +3558,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                         >
                                           <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                             <ItemIcon type={item.icon} appName={item.name} />
-                                            <span className="text-xs font-medium">{item.name}</span>
+                                            <span className="text-sm text-foreground font-medium">{item.name}</span>
                                           </div>
                                           {details && (
                                             <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />
@@ -3616,7 +3596,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                                   <div className="flex-shrink-0">
                                     <ItemIcon type={item.icon} />
                                   </div>
-                                  <span className="text-xs font-medium truncate min-w-0">{item.name}</span>
+                                  <span className="text-sm text-foreground truncate font-medium min-w-0">{item.name}</span>
                                 </div>
                                 <GripVertical className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-all pointer-events-none ml-1" />
                               </div>
@@ -3635,7 +3615,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
                             >
                               <div className="flex items-center gap-2.5 text-foreground overflow-x-auto whitespace-nowrap">
                                 <ItemIcon type={item.icon} />
-                                <span className="text-xs font-medium">{item.name}</span>
+                                <span className="text-sm text-foreground font-medium">{item.name}</span>
                               </div>
                               {details && (
                                 <ChevronDown className="w-3.5 h-3.5 text-muted-foreground -rotate-90 flex-shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none" />

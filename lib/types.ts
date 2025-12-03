@@ -26,13 +26,16 @@ export type Category = {
   name: string
   icon: React.ComponentType<{ className?: string }>
   items: CategoryItem[]
+  utilsCategories?: {
+    [key: string]: CategoryItem[]
+  }
 }
 
 export type SelectedAction = {
   appName: string
   actionName: string
   description: string
-  type: "trigger" | "action"
+  type: "trigger" | "action" | "input" | "output"
 }
 
 export type WorkflowNodeData = {
