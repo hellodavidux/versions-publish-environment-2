@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { ReactFlow, Background, ReactFlowProvider, useNodesState, useEdgesState, useReactFlow } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import WorkflowNode from "@/components/workflow-node"
 import { NodeSettingsSidebar } from "@/components/node-settings-sidebar"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuTrigger } from "@/components/ui/context-menu"
-import { Link2, Play, Zap, StickyNote, Clipboard, ClipboardX, Square } from "lucide-react"
+import { Play, StickyNote, Clipboard, ClipboardX } from "lucide-react"
 import type { Node } from "@xyflow/react"
 import type { WorkflowNodeData, SelectedAction } from "@/lib/types"
 
@@ -17,24 +17,31 @@ const nodeTypes = {
 
 function FlowCanvas({
   onActionSelectRef,
-  onOpenNodeSelectorRef,
+  onRunRef,
 }: {
   onActionSelectRef: React.MutableRefObject<((action: SelectedAction) => void) | null>
-  onOpenNodeSelectorRef: React.MutableRefObject<((position: { x: number; y: number }, source?: "handle" | "replace", tab?: string) => void) | null>
+  onRunRef: React.MutableRefObject<(() => void) | null>
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isRunMode, setIsRunMode] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [openIOPanels, setOpenIOPanels] = useState<Set<string>>(new Set())
+  const [activeIOTabs, setActiveIOTabs] = useState<Map<string, "output" | "completion">>(new Map())
+  const [dismissedIOPanels, setDismissedIOPanels] = useState<Map<string, Set<"output" | "completion">>>(new Map())
+  const [clearedOutputs, setClearedOutputs] = useState<Set<string>>(new Set())
   const [selectedNodeData, setSelectedNodeData] = useState<{
     id: string
     appName: string
     actionName: string
     description: string
-    type?: "trigger" | "action"
+    type?: "trigger" | "action" | "input" | "output"
   } | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number } | null>(null)
-  const { screenToFlowPosition, getViewport } = useReactFlow()
+  const { screenToFlowPosition } = useReactFlow()
 
   const handleActionSelect = (action: SelectedAction, sourceNodeId?: string, side?: "left" | "right") => {
     // Check if we're replacing a node
@@ -147,71 +154,6 @@ function FlowCanvas({
     }
   }
 
-  const handleAddNode = (event?: React.MouseEvent) => {
-    // Get the current mouse position or use stored context menu position
-    let position: { x: number; y: number } | null = null
-    
-    if (event) {
-      // Use the event position if available
-      position = { x: event.clientX, y: event.clientY }
-    } else if (contextMenuPosition) {
-      // Fallback to stored context menu position
-      position = contextMenuPosition
-    }
-    
-    // Open node selector at cursor position
-    if (position) {
-      // Position is already in screen coordinates
-      if (onOpenNodeSelectorRef.current) {
-        // Direct screen coordinates for the ref function
-        onOpenNodeSelectorRef.current({ x: position.x, y: position.y }, "handle")
-      } else if ((window as any).__openNodeSelector) {
-        // Fallback: convert screen to flow coordinates for window function
-        const flowPosition = screenToFlowPosition({
-          x: position.x,
-          y: position.y,
-        })
-        ;(window as any).__openNodeSelector(flowPosition, "handle")
-      }
-    }
-    setContextMenuPosition(null)
-  }
-
-  const handleAddAction = () => {
-    // Open node selector in Actions & Outputs tab at cursor position
-    if (contextMenuPosition) {
-      // Use screen coordinates directly
-      if (onOpenNodeSelectorRef.current) {
-        onOpenNodeSelectorRef.current({ x: contextMenuPosition.x, y: contextMenuPosition.y }, "handle", "Core Nodes")
-      } else if ((window as any).__openNodeSelector) {
-        // Fallback: convert screen to flow coordinates for window function
-        const flowPosition = screenToFlowPosition({
-          x: contextMenuPosition.x,
-          y: contextMenuPosition.y,
-        })
-        ;(window as any).__openNodeSelector(flowPosition, "handle", "Core Nodes")
-      }
-    }
-    setContextMenuPosition(null)
-  }
-
-  const handleAddTrigger = () => {
-    // Open node selector in Triggers tab at cursor position
-    if (contextMenuPosition) {
-      // Use screen coordinates directly
-      if (onOpenNodeSelectorRef.current) {
-        onOpenNodeSelectorRef.current({ x: contextMenuPosition.x, y: contextMenuPosition.y }, "handle", "Triggers")
-      } else if ((window as any).__openNodeSelector) {
-        // Fallback: convert screen to flow coordinates for window function
-        const flowPosition = screenToFlowPosition({
-          x: contextMenuPosition.x,
-          y: contextMenuPosition.y,
-        })
-        ;(window as any).__openNodeSelector(flowPosition, "handle", "Triggers")
-      }
-    }
-    setContextMenuPosition(null)
-  }
 
   const handleAddNote = () => {
     // Create a note node at cursor position
@@ -253,9 +195,83 @@ function FlowCanvas({
   }
 
   const handleRun = () => {
-    // TODO: Implement run functionality
     setContextMenuPosition(null)
+    
+    if (isRunMode) {
+      // If already in run mode, toggle it off
+      setIsRunMode(false)
+      setIsRunning(false)
+      setOpenIOPanels(new Set())
+      setDismissedIOPanels(new Map()) // Reset dismissed state when exiting run mode
+      return
+    }
+    
+    // Reset dismissed state for all nodes when starting a new run
+    setDismissedIOPanels(new Map())
+    
+    // Start loading animation
+    setIsLoading(true)
+    
+    // Show running state immediately
+    setIsRunning(true)
+    
+    // After a short delay, stop loading
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 500) // Loading animation for 500ms
+    
+    // After running for a bit, show success
+    setTimeout(() => {
+      setIsRunning(false)
+      setIsRunMode(true)
+      // Show notification dot on output buttons
+      const defaultTabs = new Map(nodes.map(n => [n.id, "output" as const]))
+      setActiveIOTabs(defaultTabs)
+    }, 2000) // Run for 2 seconds
   }
+
+  const handleClearOutput = useCallback((nodeId: string) => {
+    setClearedOutputs((prev) => new Set(prev).add(nodeId))
+  }, [])
+
+  const handleToggleIOPanel = useCallback((nodeId: string, tab?: "output" | "completion") => {
+    setOpenIOPanels((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(nodeId) && !tab) {
+        // Close panel if no tab specified (close button clicked)
+        newSet.delete(nodeId)
+        // Mark the current active tab as dismissed so notification dot doesn't reappear
+        setDismissedIOPanels((prev) => {
+          const newMap = new Map(prev)
+          const activeTab = activeIOTabs.get(nodeId) || "output"
+          const dismissedTabs = new Set(newMap.get(nodeId) || [])
+          dismissedTabs.add(activeTab)
+          newMap.set(nodeId, dismissedTabs)
+          return newMap
+        })
+      } else {
+        // Open/expand panel (always open if tab is specified)
+        newSet.add(nodeId)
+        if (tab) {
+          // Set active tab
+          setActiveIOTabs((prev) => {
+            const newMap = new Map(prev)
+            newMap.set(nodeId, tab)
+            return newMap
+          })
+          // Mark this specific tab as dismissed when opened
+          setDismissedIOPanels((prev) => {
+            const newMap = new Map(prev)
+            const dismissedTabs = new Set(newMap.get(nodeId) || [])
+            dismissedTabs.add(tab)
+            newMap.set(nodeId, dismissedTabs)
+            return newMap
+          })
+        }
+      }
+      return newSet
+    })
+  }, [activeIOTabs])
 
   const handleDragOver = (event: React.DragEvent) => {
     event.preventDefault()
@@ -313,7 +329,7 @@ function FlowCanvas({
 
   const handleNodeUpdate = (
     nodeId: string,
-    data: { appName: string; actionName: string; description: string; type: "trigger" | "action" }
+    data: { appName: string; actionName: string; description: string; type: "trigger" | "action" | "input" | "output" }
   ) => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -355,45 +371,88 @@ function FlowCanvas({
     }
   }, [onActionSelectRef, nodes])
 
-  const handleOpenNodeSelector = (position: { x: number; y: number }, source: "handle" | "replace" = "handle", tab?: string) => {
-    if (onOpenNodeSelectorRef.current) {
-      // Convert flow position to screen position
-      const viewport = getViewport()
-      const screenX = (position.x * viewport.zoom) + viewport.x + 48 // Add sidebar width
-      const screenY = (position.y * viewport.zoom) + viewport.y + 56 // Add top bar height
-      onOpenNodeSelectorRef.current({ x: screenX, y: screenY }, source, tab)
-    }
-  }
-
   useEffect(() => {
-    ;(window as any).__openNodeSelector = handleOpenNodeSelector
-  }, [])
+    onRunRef.current = handleRun
+  }, [onRunRef, isRunMode, nodes])
 
-  // Handle Command+K keyboard shortcut to open node selector
+  // Update nodes with run mode and IO panel state
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check for Command+K (Mac) or Ctrl+K (Windows/Linux)
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault()
-        
-        // Get viewport center position
-        const viewportWidth = window.innerWidth - 48 // Subtract sidebar width
-        const viewportHeight = window.innerHeight - 56 // Subtract top bar height
-        const centerX = viewportWidth / 2
-        const centerY = viewportHeight / 2
-        
-        // Open node selector at center of viewport
-        if (onOpenNodeSelectorRef.current) {
-          onOpenNodeSelectorRef.current({ x: centerX, y: centerY }, "handle")
+    setNodes((nds) =>
+      nds.map((node) => {
+        const nodeData = node.data as WorkflowNodeData
+        // Only update if something actually changed to avoid unnecessary re-renders
+        const isIOPanelOpen = openIOPanels.has(node.id)
+        const activeIOTab = activeIOTabs.get(node.id) ?? ("output" as "output" | "completion")
+        const dismissedTabs = dismissedIOPanels.get(node.id) || new Set<"output" | "completion">()
+        const isOutputDismissed = dismissedTabs.has("output")
+        const isCompletionDismissed = dismissedTabs.has("completion")
+        const isCleared = clearedOutputs.has(node.id)
+        if (
+          nodeData.isRunMode === isRunMode &&
+          nodeData.isRunning === isRunning &&
+          nodeData.isIOPanelOpen === isIOPanelOpen &&
+          nodeData.activeIOTab === activeIOTab &&
+          nodeData.isOutputDismissed === isOutputDismissed &&
+          nodeData.isCompletionDismissed === isCompletionDismissed &&
+          nodeData.onToggleIOPanel === handleToggleIOPanel
+        ) {
+          return node
         }
-      }
-    }
+        return {
+          ...node,
+          data: {
+            ...nodeData,
+            isRunMode,
+            isRunning,
+            isIOPanelOpen,
+            activeIOTab,
+            isOutputDismissed,
+            isCompletionDismissed,
+            onToggleIOPanel: handleToggleIOPanel,
+            onClearOutput: () => handleClearOutput(node.id),
+            // Only provide output data when in run mode and not cleared
+            input: isRunMode && !isCleared ? {
+              message: "Hello, world!",
+              channel: "#general",
+              user: "john.doe",
+              timestamp: new Date().toISOString(),
+            } : null,
+            output: isRunMode && !isCleared ? {
+              status: "success",
+              message: "Request completed successfully",
+              timestamp: new Date().toISOString(),
+              data: {
+                id: `msg_${node.id}`,
+                type: "workflow_execution",
+                execution_time: Math.floor(Math.random() * 500) + 100,
+                results: {
+                  processed: true,
+                  records: Math.floor(Math.random() * 100) + 10,
+                  errors: 0,
+                },
+                metadata: {
+                  version: "1.0.0",
+                  environment: "production",
+                  region: "us-east-1",
+                },
+                nested: {
+                  level1: {
+                    level2: {
+                      value: "deeply nested data",
+                      count: 42,
+                    },
+                  },
+                },
+              },
+              tags: ["processed", "success", "workflow"],
+            } : null,
+            completion: isRunMode && !isCleared ? "The email address [jdoe@stack-ai.com](mailto:jdoe@stack-ai.com) appears to be associated with Jane Doe, who is listed as an AI Engineer at Stack AI according to public organizational charts and professional profiles[^55269.0.0][^55279.0.0]. This address is likely a professional or corporate email used for work-related communications within Stack AI. Web search results confirm Jane Doe's role and provide a detailed background, including her previous positions and academic credentials, which further supports the legitimacy of the email as belonging to a real individual at Stack AI[^55269.0.0].\n\nAdditionally, a search of email records reveals that [jdoe@stack-ai.com](mailto:jdoe@stack-ai.com) has been involved in recent email activity, including receiving onboarding information for a Slack workspace and sending or receiving other messages. The content of these emails is consistent with typical business communications, such as workspace setup instructions and notifications[^55279.0.0]. This further corroborates that the email is actively used for professional purposes.\n\nIn summary, [jdoe@stack-ai.com](mailto:jdoe@stack-ai.com) originates from Stack AI and is used by Jane Doe, an AI Engineer at the company. The email is active and involved in standard business correspondence, as evidenced by both web and email search results[^55269.0.0][^55279.0.0].\n\nI am also sending you an email to confirm that I am actively looking into this matter." : null,
+          },
+        }
+      })
+    )
+  }, [isRunMode, isRunning, openIOPanels, activeIOTabs, dismissedIOPanels, handleToggleIOPanel, setNodes])
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [onOpenNodeSelectorRef])
 
   useEffect(() => {
     if (!isInitialized) {
@@ -405,12 +464,13 @@ function FlowCanvas({
       const centerY = viewportHeight / 2 - 100 // Approximate center accounting for node height
       
       const defaultNodeData: WorkflowNodeData = {
-        appName: "Slack",
-        actionName: "On App Mention",
-        description: "Triggered when your app is mentioned in a channel",
-        type: "trigger",
+        appName: "AI Agent",
+        actionName: "LLM",
+        description: "Process text using a large language model",
+        type: "action",
         version: "v1.0.0",
         onDeleteNode: handleDeleteNode,
+        onToggleIOPanel: handleToggleIOPanel,
       }
       
       const defaultNode: Node = {
@@ -432,7 +492,7 @@ function FlowCanvas({
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onMouseMove={handleMouseMove}
-            className="w-full h-full"
+            className="w-full h-full bg-[#F2F2F2]"
           >
         <ReactFlow
           nodes={nodes}
@@ -443,28 +503,14 @@ function FlowCanvas({
               onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
               defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
-          className="bg-muted/30"
+          className="bg-[#F2F2F2]"
+          style={{ backgroundColor: '#F2F2F2' }}
         >
           <Background gap={20} size={1} />
         </ReactFlow>
       </div>
         </ContextMenuTrigger>
         <ContextMenuContent>
-            <ContextMenuItem onClick={(e) => handleAddNode(e.nativeEvent as any)}>
-              <Link2 className="mr-2 h-4 w-4" />
-              <span>Add a node</span>
-              <ContextMenuShortcut>⌘ K</ContextMenuShortcut>
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleAddAction}>
-              <Play className="mr-2 h-4 w-4" />
-              <span>Add an action</span>
-              <ContextMenuShortcut>⇧ A</ContextMenuShortcut>
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleAddTrigger}>
-              <Zap className="mr-2 h-4 w-4" />
-              <span>Add a trigger</span>
-              <ContextMenuShortcut>⇧ T</ContextMenuShortcut>
-            </ContextMenuItem>
             <ContextMenuItem onClick={handleAddNote}>
               <StickyNote className="mr-2 h-4 w-4" />
               <span>Add a note</span>
@@ -496,17 +542,7 @@ function FlowCanvas({
         nodeData={selectedNodeData}
         onNodeUpdate={handleNodeUpdate}
         onReplaceNode={(nodeId) => {
-          const node = nodes.find((n) => n.id === nodeId)
-          if (node) {
-            const viewport = getViewport()
-            const nodeHeight = 60
-            const screenX = (node.position.x * viewport.zoom) + viewport.x + 48
-            const screenY = (node.position.y * viewport.zoom) + viewport.y + 56 + nodeHeight + 8
-            ;(window as any).__replaceNodeId = nodeId
-            if ((window as any).__openNodeSelector) {
-              ;(window as any).__openNodeSelector({ x: screenX, y: screenY })
-            }
-          }
+          // Replace node functionality removed
         }}
       />
     </>
@@ -515,7 +551,7 @@ function FlowCanvas({
 
 export default function Page() {
   const actionSelectRef = React.useRef<((action: SelectedAction) => void) | null>(null)
-  const openNodeSelectorRef = React.useRef<((position: { x: number; y: number }, source?: "handle" | "replace", tab?: string) => void) | null>(null)
+  const runRef = React.useRef<(() => void) | null>(null)
 
   const handleActionSelect = (action: SelectedAction) => {
     if (actionSelectRef.current) {
@@ -523,14 +559,16 @@ export default function Page() {
     }
   }
 
-  const handleOpenNodeSelector = (openFn: (position: { x: number; y: number }) => void) => {
-    openNodeSelectorRef.current = openFn
+  const handleRun = () => {
+    if (runRef.current) {
+      runRef.current()
+    }
   }
 
   return (
-    <DashboardLayout onActionSelect={handleActionSelect} onOpenNodeSelector={handleOpenNodeSelector}>
+    <DashboardLayout onActionSelect={handleActionSelect} onRun={handleRun}>
     <ReactFlowProvider>
-        <FlowCanvas onActionSelectRef={actionSelectRef} onOpenNodeSelectorRef={openNodeSelectorRef} />
+        <FlowCanvas onActionSelectRef={actionSelectRef} onRunRef={runRef} />
     </ReactFlowProvider>
     </DashboardLayout>
   )

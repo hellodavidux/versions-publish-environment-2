@@ -33,12 +33,12 @@ export function NodeHandles({ children, onLeftClick, onRightClick, showHandles =
             onClick={onLeftClick}
           >
             <div
-              className={`rounded-lg flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 ${
+              className={`flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 border border-border ${
                 leftHovered
                   ? "w-10 h-10 bg-foreground"
                   : nodeHovered
-                    ? "w-8 h-8 bg-card border border-border"
-                    : "w-4 h-4 bg-card border border-border opacity-0"
+                    ? "w-8 h-8 bg-card"
+                    : "w-4 h-4 bg-card opacity-0"
               }`}
             >
               <Plus
@@ -73,12 +73,12 @@ export function NodeHandles({ children, onLeftClick, onRightClick, showHandles =
             onClick={onRightClick}
           >
             <div
-              className={`rounded-lg flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 ${
+              className={`flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 border border-border ${
                 rightHovered
                   ? "w-10 h-10 bg-foreground"
                   : nodeHovered
-                    ? "w-8 h-8 bg-card border border-border"
-                    : "w-5 h-5 bg-card border border-border"
+                    ? "w-8 h-8 bg-card"
+                    : "w-5 h-5 bg-card"
               }`}
             >
               <Plus

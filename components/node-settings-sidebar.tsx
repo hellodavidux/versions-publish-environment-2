@@ -13,11 +13,11 @@ interface NodeSettingsSidebarProps {
     appName: string
     actionName: string
     description: string
-    type?: "trigger" | "action"
+    type?: "trigger" | "action" | "input" | "output"
   } | null
   onNodeUpdate?: (
     nodeId: string,
-    data: { appName: string; actionName: string; description: string; type: "trigger" | "action" },
+    data: { appName: string; actionName: string; description: string; type: "trigger" | "action" | "input" | "output" },
   ) => void
   onReplaceNode?: (nodeId: string) => void
 }

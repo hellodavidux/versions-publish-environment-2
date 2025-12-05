@@ -3,7 +3,7 @@
 import type React from "react"
 import { memo } from "react"
 import { type NodeProps, useReactFlow } from "@xyflow/react"
-import { Clock, MoreVertical, Pencil, FileText, Zap, Link, Mic, Play, Box, BookOpen, Code, Wrench, RefreshCw } from "lucide-react"
+import { Clock, MoreVertical, Pencil, FileText, Zap, Link, Mic, Play, Box, BookOpen, Code, Wrench, RefreshCw, CheckCircle2, Upload, Loader2, Database, Layers3, Snowflake } from "lucide-react"
 import SlackIconComponent from "./SlackIcon"
 import StackAIIcon from "./StackAIIcon"
 import AnthropicIcon from "./AnthropicIcon"
@@ -12,6 +12,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Trash2 } from "lucide-react"
 import { NodeHandles } from "./node-handles"
+import { NodeIOPanel } from "./node-io-panel"
+import { ChevronDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import type { WorkflowNodeData } from "@/lib/types"
 
 export function AppIcon({ appName, className }: { appName: string; className?: string }) {
@@ -87,29 +90,34 @@ function WorkflowNode({ data, id }: NodeProps) {
     onReplaceNode,
     onHandleClick,
     onDeleteNode,
+    isRunMode = false,
+    isRunning = false,
+    isIOPanelOpen = false,
+    activeIOTab = "input",
+    isOutputDismissed = false,
+    isCompletionDismissed = false,
+    onToggleIOPanel,
+    onClearOutput,
+    input,
+    output,
+    completion,
   } = nodeData
 
-  const { getNode, getViewport } = useReactFlow()
+  const { getNode } = useReactFlow()
 
   const handleHandleClick = (side: "left" | "right", e: React.MouseEvent) => {
     e.stopPropagation()
-    const node = getNode(id as string)
-    if (node) {
-      const rect = e.currentTarget.getBoundingClientRect()
-      // Calculate position next to the node - more to the left and higher
-      const position = {
-        x: side === "right" ? rect.right + 50 : rect.left - 10, // Position panel more to the left
-        y: rect.top - 100, // Position higher (reduced from -56)
-      }
-      
-      // Store the source node ID and side for when an action is selected
-      ;(window as any).__handleClickSourceNode = { nodeId: id, side }
-      
-      // Open node selector at this position
-      if ((window as any).__openNodeSelector) {
-        ;(window as any).__openNodeSelector(position, "handle")
-      } else if (onHandleClick) {
-        // Fallback to original behavior
+    // Store the source node ID and side for when an action is selected
+    ;(window as any).__handleClickSourceNode = { nodeId: id, side }
+    
+    if (onHandleClick) {
+      const node = getNode(id as string)
+      if (node) {
+        const rect = e.currentTarget.getBoundingClientRect()
+        const position = {
+          x: side === "right" ? rect.right + 50 : rect.left - 10,
+          y: rect.top - 100,
+        }
         onHandleClick(side, position)
       }
     }
@@ -117,27 +125,9 @@ function WorkflowNode({ data, id }: NodeProps) {
 
   const handleReplaceNode = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const node = getNode(id as string)
-    if (node) {
-      // Calculate screen position from flow position
-      const viewport = getViewport()
-      const nodeHeight = 60 // Reduced node height for positioning
-      const screenX = (node.position.x * viewport.zoom) + viewport.x + 48 // Add sidebar width
-      const screenY = (node.position.y * viewport.zoom) + viewport.y + 56 + nodeHeight + 8 // Add top bar, reduced node height, and smaller gap
-      
-      const position = {
-        x: screenX,
-        y: screenY,
-      }
-      
-      // Store that we're replacing this node
-      ;(window as any).__replaceNodeId = id
-      
-      // Open node selector at this position
-      if ((window as any).__openNodeSelector) {
-        ;(window as any).__openNodeSelector(position, "replace")
-      }
-    }
+    // Store that we're replacing this node
+    ;(window as any).__replaceNodeId = id
+    // Replace node functionality removed
   }
 
   const handleDeleteNode = (e: React.MouseEvent) => {
@@ -147,69 +137,238 @@ function WorkflowNode({ data, id }: NodeProps) {
 
   const iconBg = getNodeIconBg(appName)
 
+  const handleToggleIOPanel = (tab?: "output" | "completion") => {
+    if (onToggleIOPanel) {
+      onToggleIOPanel(id as string, tab)
+    }
+  }
+
+  const handleOutputClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    // Always open panel with output tab when clicking output button
+    // This should work regardless of run mode - always try to open
+    if (onToggleIOPanel) {
+      onToggleIOPanel(id as string, "output")
+    }
+  }
+
+  const handleCompletionClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    // Always open panel with completion tab when clicking completion button
+    if (onToggleIOPanel) {
+      onToggleIOPanel(id as string, "completion")
+    }
+  }
+
   return (
-    <NodeHandles onLeftClick={(e) => handleHandleClick("left", e)} onRightClick={(e) => handleHandleClick("right", e)}>
-      <ContextMenu>
-        <ContextMenuTrigger asChild>
-          {/* Main card */}
-          <div className="bg-card rounded-xl border border-border shadow-sm p-4 w-[380px]">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-                <AppIcon appName={appName} className="w-4 h-4" />
+    <div className="flex flex-col relative">
+      {/* Status badge - appears when running or in run mode, positioned absolutely above the card */}
+      {(isRunning || isRunMode) && (
+        <div className="absolute -top-8 right-6" style={{ width: '380px' }}>
+          <div className="flex justify-end">
+            {isRunning ? (
+              <div className="bg-purple-50 border border-purple-200 rounded-md px-2 py-1 flex items-center gap-1.5 shadow-sm">
+                <Loader2 className="w-3.5 h-3.5 text-purple-600 animate-spin" />
+                <span className="text-xs font-medium text-purple-700">Running</span>
               </div>
-              <span className="text-base font-semibold text-foreground flex-1">{actionName}</span>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="p-1 rounded-md hover:bg-muted transition-colors" onClick={(e) => e.stopPropagation()}>
-                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={handleReplaceNode}
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Replace
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDeleteNode}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Description */}
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{description}</p>
-
-            {/* Metadata badges */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-muted/30 text-xs text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                <span>0.00 sec</span>
+            ) : (
+              <div className="bg-green-50 border border-green-200 rounded-md px-2 py-1 flex items-center gap-1.5 shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                <span className="text-xs font-medium text-green-700">Success</span>
               </div>
-              <div className="px-2.5 py-1 rounded-full border border-border bg-muted/30 text-xs text-muted-foreground">
-                {version}
-              </div>
-            </div>
+            )}
           </div>
-        </ContextMenuTrigger>
-        <ContextMenuContent>
-          <ContextMenuItem onClick={handleReplaceNode}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Replace
-          </ContextMenuItem>
-          <ContextMenuItem onClick={handleDeleteNode} variant="destructive">
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
-    </NodeHandles>
+        </div>
+      )}
+      <NodeHandles onLeftClick={(e) => handleHandleClick("left", e)} onRightClick={(e) => handleHandleClick("right", e)}>
+        <div className="relative">
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              {/* Main card */}
+              <div className={`bg-card rounded-xl w-[380px] transition-all overflow-hidden border border-border/50 ${
+                isRunning 
+                  ? "shadow-[0_0_0_3px_rgba(168,85,247,0.15)]" 
+                  : isRunMode 
+                    ? "shadow-[0_0_0_3px_rgba(34,197,94,0.15)]" 
+                    : "shadow-sm"
+              }`}>
+                {appName === "AI Agent" && actionName === "LLM" ? (
+                  <div className="p-4">
+                    {/* Custom LLM Layout */}
+                    <div className="flex items-center gap-3 mb-3 relative">
+                      {/* OpenAI Logo */}
+                      <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 border border-border rounded">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
+                          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                          <path d="M2 17l10 5 10-5" />
+                          <path d="M2 12l10 5 10-5" />
+                        </svg>
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground">Agent classifier</h3>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="absolute right-0 p-1 rounded-md hover:bg-muted transition-colors flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={handleReplaceNode}>
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Replace
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleDeleteNode} className="text-destructive focus:text-destructive">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* OpenAI Agent with tool calling */}
+                    <div className="mb-3">
+                      <p className="text-sm text-muted-foreground">OpenAI Agent with tool calling</p>
+                    </div>
+
+                    {/* GPT 4.1 Box */}
+                    <div className="bg-muted/50 rounded-lg p-3 flex items-center gap-2 mb-3">
+                      <Database className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">GPT 4.1</span>
+                    </div>
+
+                    {/* Bottom Icons */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center -space-x-2">
+                        {/* Database icons */}
+                        <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center relative z-[3]">
+                          <Database className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center relative z-[2]">
+                          <Database className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        {/* +4 badge */}
+                        <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center relative z-[1]">
+                          <span className="text-xs font-medium text-muted-foreground">+4</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center -space-x-2">
+                        {/* 3D cubes */}
+                        <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center relative z-[2]">
+                          <Layers3 className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        {/* Snowflake */}
+                        <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center relative z-[1]">
+                          <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
+                            <Snowflake className="w-3 h-3 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4">
+                    {/* Default Header */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+                        <AppIcon appName={appName} className="w-4 h-4" />
+                      </div>
+                      <span className="text-base font-semibold text-foreground flex-1">{actionName}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-md hover:bg-muted transition-colors" onClick={(e) => e.stopPropagation()}>
+                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={handleReplaceNode}
+                          >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Replace
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={handleDeleteNode}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{description}</p>
+                  </div>
+                )}
+                
+                {/* Footer with Output and Completion tabs */}
+                <div className="bg-muted/30 px-4 pt-2 pb-0 border-t border-border/50 flex items-center gap-6 relative">
+                  <button
+                    type="button"
+                    className={`relative text-sm font-normal transition-colors cursor-pointer leading-none pb-2.5 border-b ${
+                      isIOPanelOpen && activeIOTab === "output" 
+                        ? "text-foreground border-gray-400" 
+                        : "text-muted-foreground hover:text-foreground border-transparent"
+                    }`}
+                    onClick={handleOutputClick}
+                  >
+                    <span className="relative inline-block">
+                      Output
+                      {isRunMode && !isIOPanelOpen && !isOutputDismissed && (
+                        <span className="absolute top-0 -right-1.5 w-1.5 h-1.5 bg-black rounded-full ring-1.5 ring-white" />
+                      )}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`relative text-sm font-normal transition-colors cursor-pointer leading-none pb-2.5 border-b ${
+                      isIOPanelOpen && activeIOTab === "completion" 
+                        ? "text-foreground border-gray-400" 
+                        : "text-muted-foreground hover:text-foreground border-transparent"
+                    }`}
+                    onClick={handleCompletionClick}
+                  >
+                    <span className="relative inline-block">
+                      Completion
+                      {isRunMode && !isIOPanelOpen && !isCompletionDismissed && (
+                        <span className="absolute top-0 -right-1.5 w-1.5 h-1.5 bg-black rounded-full ring-1.5 ring-white" />
+                      )}
+                    </span>
+                  </button>
+                </div>
+              </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={handleReplaceNode}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Replace
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleDeleteNode} variant="destructive">
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+        </div>
+      </NodeHandles>
+      
+      {/* IO Panel - appears below the node when open */}
+      {isIOPanelOpen && (
+        <div className="mx-6 mt-1.5">
+          <NodeIOPanel
+            nodeId={id as string}
+            activeTab={activeIOTab === "output" || activeIOTab === "completion" ? activeIOTab : "output"}
+            onClose={handleToggleIOPanel}
+            onClear={onClearOutput}
+            input={input}
+            output={output}
+            completion={completion}
+          />
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -2818,7 +2818,7 @@ export function AddElementsPanel({ onSelectAction, source = "handle", isPinned =
           {/* Items list */}
           <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-y-auto nowheel my-2 py-[0] node-selector-scrollable min-w-0 ${source === "sidebar" ? "node-selector-scrollable-thin" : ""}`}
+            className={`flex-1 overflow-y-auto nowheel my-2 py-[0] min-w-0`}
             onWheel={(e) => e.stopPropagation()}
           >
             <div key={tabKey} className="animate-in fade-in duration-300">

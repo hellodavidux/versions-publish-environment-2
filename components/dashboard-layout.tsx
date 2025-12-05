@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React from "react"
 import {
   Search,
   Link as LinkIcon,
@@ -13,7 +13,6 @@ import {
   Upload,
   Save,
   Play,
-  Plus,
 } from "lucide-react"
 
 // Custom icon components for sidebar
@@ -67,89 +66,16 @@ const GitBranchIcon = ({ className }: { className?: string }) => (
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import { AddElementsPanel } from "@/components/add-elements-panel"
 import type { SelectedAction } from "@/lib/types"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   onActionSelect?: (action: SelectedAction) => void
-  onOpenNodeSelector?: (openFn: (position: { x: number; y: number }, source?: "handle" | "replace", tab?: string) => void) => void
+  onRun?: () => void
 }
 
-export function DashboardLayout({ children, onActionSelect, onOpenNodeSelector }: DashboardLayoutProps) {
+export function DashboardLayout({ children, onActionSelect, onRun }: DashboardLayoutProps) {
   const [activeTab, setActiveTab] = React.useState("Workflow")
-  const [isNodeSelectorOpen, setIsNodeSelectorOpen] = useState(false)
-  const [isPinned, setIsPinned] = useState(false)
-  const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 })
-  const [panelSource, setPanelSource] = useState<"sidebar" | "handle" | "replace">("handle")
-  const [initialTab, setInitialTab] = useState<string | undefined>(undefined)
-  const plusButtonRef = useRef<HTMLButtonElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
-
-  const handlePlusClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (plusButtonRef.current) {
-      const rect = plusButtonRef.current.getBoundingClientRect()
-      setPanelPosition({
-        top: rect.top - 56, // Account for top bar
-        left: 20, // Fixed left position
-      })
-    }
-    setPanelSource("sidebar") // Mark this as coming from sidebar
-    setIsNodeSelectorOpen(!isNodeSelectorOpen)
-  }
-
-  const handleActionSelect = (action: SelectedAction) => {
-    onActionSelect?.(action)
-    if (!isPinned) {
-      setIsNodeSelectorOpen(false)
-    }
-  }
-
-  const handlePinToggle = (pinned: boolean) => {
-    setIsPinned(pinned)
-  }
-
-  const openNodeSelectorAtPosition = (position: { x: number; y: number }, source: "handle" | "replace" = "handle", tab?: string) => {
-    setPanelPosition({ left: position.x, top: position.y })
-    setPanelSource(source)
-    setInitialTab(tab)
-    setIsNodeSelectorOpen(true)
-  }
-
-  // Expose the function to open node selector at a position
-  useEffect(() => {
-    if (onOpenNodeSelector) {
-      onOpenNodeSelector(openNodeSelectorAtPosition)
-    }
-  }, [onOpenNodeSelector])
-
-  // Close panel when clicking outside (only if not pinned)
-  useEffect(() => {
-    if (!isNodeSelectorOpen || isPinned) return
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (
-        panelRef.current &&
-        plusButtonRef.current &&
-        !panelRef.current.contains(target) &&
-        !plusButtonRef.current.contains(target) &&
-        !target.closest('[data-nextjs-toast]') // Don't close when clicking Next.js dev tools
-      ) {
-        setIsNodeSelectorOpen(false)
-      }
-    }
-
-    // Use both mousedown and click events, with capture phase
-    document.addEventListener("mousedown", handleClickOutside, true)
-    document.addEventListener("click", handleClickOutside, true)
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside, true)
-      document.removeEventListener("click", handleClickOutside, true)
-    }
-  }, [isNodeSelectorOpen, isPinned])
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
@@ -198,7 +124,7 @@ export function DashboardLayout({ children, onActionSelect, onOpenNodeSelector }
           <Button variant="ghost" size="icon-sm" className="h-8 w-8">
             <Save className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5">
+          <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={onRun}>
             <Play className="h-3.5 w-3.5" />
             Run
           </Button>
@@ -214,22 +140,6 @@ export function DashboardLayout({ children, onActionSelect, onOpenNodeSelector }
         <TooltipProvider delayDuration={100}>
           <div className="hidden flex w-12 flex-col items-center border-r border-border bg-background py-5">
             <div className="flex flex-col items-center gap-1.5">
-              {/* Plus Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    ref={plusButtonRef}
-                    onClick={handlePlusClick}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground border border-border hover:bg-foreground hover:text-background transition-colors mb-2"
-                    type="button"
-                  >
-                    <Plus className="h-5 w-5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8} hideArrow>
-                  <span>Add node</span>
-                </TooltipContent>
-              </Tooltip>
 
               {/* Icons */}
               <Tooltip>
@@ -354,26 +264,6 @@ export function DashboardLayout({ children, onActionSelect, onOpenNodeSelector }
         {/* Canvas Area */}
         <div className="flex-1 overflow-hidden relative">
           {children}
-          {/* Node Selector Popover */}
-          {isNodeSelectorOpen && (
-            <div
-              ref={panelRef}
-              className="absolute z-50"
-              style={{
-                left: `${panelPosition.left}px`,
-                top: `${panelPosition.top}px`,
-              }}
-            >
-              <AddElementsPanel 
-                onSelectAction={handleActionSelect} 
-                onClose={() => setIsNodeSelectorOpen(false)} 
-                source={panelSource}
-                isPinned={isPinned}
-                onPinToggle={handlePinToggle}
-                initialTab={initialTab}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

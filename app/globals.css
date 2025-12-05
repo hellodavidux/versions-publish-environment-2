@@ -134,49 +134,31 @@
   border: none !important;
 }
 
-/* Scrollbar styles for node selector panel */
-.node-selector-scrollable {
-  scrollbar-width: thin; /* Firefox - use thin to reserve space, make transparent */
-  -ms-overflow-style: auto; /* IE and Edge */
-  scrollbar-gutter: stable; /* Reserve space for scrollbar to prevent layout shift */
-  scrollbar-color: transparent transparent; /* Firefox - transparent scrollbar by default */
-}
-
-.node-selector-scrollable::-webkit-scrollbar {
-  width: 8px;
-}
-
-.node-selector-scrollable::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.node-selector-scrollable::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-.node-selector-scrollable:hover::-webkit-scrollbar-thumb {
-  background: oklch(0.556 0 0 / 0.4);
-}
-
-.node-selector-scrollable:hover {
-  scrollbar-color: oklch(0.556 0 0 / 0.4) transparent; /* Firefox - show scrollbar on hover */
-}
-
-/* No scrollbar for sidebar source */
-.node-selector-scrollable-thin::-webkit-scrollbar {
-  display: none;
-  width: 0;
-}
-
-.node-selector-scrollable-thin {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
 /* Hide arrow in sidebar tooltips */
 .sidebar-tooltip [data-radix-tooltip-arrow],
 .sidebar-tooltip > div:last-child {
   display: none !important;
+}
+
+/* Hide scrollbars for specific elements - scrolling still works */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  display: none;
+  background: transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  display: none;
+  background: transparent;
 }
