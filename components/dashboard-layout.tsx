@@ -753,11 +753,17 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
             )}
             <PopoverContent align="end" className="w-64 p-0" sideOffset={12}>
               <div className="space-y-0 w-full">
-                  <div className="px-4 pt-4 w-full">
+                  <div className="px-4 pt-3 pb-3 w-full bg-muted/30">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
+                      <span className="text-sm text-muted-foreground font-normal">Publish current Draft</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-2 w-full">
                     <Popover open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
                       <PopoverTrigger asChild>
                         <button 
-                          className="w-full flex items-center gap-2 text-sm text-foreground hover:text-foreground/80 transition-colors text-left py-2"
+                          className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
                         >
                           <Plus className="h-4 w-4" />
                           Add description
@@ -790,22 +796,23 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </Popover>
                   </div>
                   <div className="h-px bg-border w-full"></div>
-                  <div className="px-4 w-full">
+                  <div className="px-4 py-2 w-full">
                     <button 
-                      className="w-full flex items-center gap-2 text-sm text-foreground hover:text-foreground/80 transition-colors text-left py-2"
+                      className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
                       onClick={() => {
                         setShowPublishDot(false);
                         setShowReviewChangesDot(false);
                       }}
                     >
                       <Link2 className="h-4 w-4" />
-                      Review the changes{showReviewChangesDot && <span className="h-3 w-3 rounded-full bg-black border-2 border-gray-200 ml-0.25 inline-block"></span>}
+                      <span className="flex-1">Review the changes</span>
+                      {showReviewChangesDot && <span className="h-3 w-3 rounded-full bg-black border-2 border-gray-200 flex-shrink-0"></span>}
                     </button>
                   </div>
                   <div className="h-px bg-border w-full"></div>
-                  <div className="w-full px-4 pt-2">
-                    <div className="space-y-2 w-full">
-                      <div className="flex items-center gap-2 text-sm text-foreground py-2">
+                  <div className="w-full px-4 py-3">
+                    <div className="space-y-2.5 w-full">
+                      <div className="flex items-center gap-2 text-sm text-foreground">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                           <circle cx="12" cy="12" r="10"/>
                           <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
@@ -824,22 +831,23 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </Select>
                     </div>
                   </div>
-                </div>
-                <div className="px-4 pt-4 pb-4">
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="w-full bg-foreground text-background hover:bg-foreground/90"
-                    onClick={() => {
-                      triggerConfetti();
-                      setShowPublishDot(false);
-                      setIsPublishOpen(false);
-                      setHasPublishedWorkflow(true);
-                    }}
-                  >
-                    Publish workflow
-                  </Button>
-                </div>
+                  <div className="h-px bg-border w-full"></div>
+                  <div className="px-4 pt-3 pb-4">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="w-full bg-foreground text-background hover:bg-foreground/90"
+                      onClick={() => {
+                        triggerConfetti();
+                        setShowPublishDot(false);
+                        setIsPublishOpen(false);
+                        setHasPublishedWorkflow(true);
+                      }}
+                    >
+                      Publish workflow
+                    </Button>
+                  </div>
+              </div>
             </PopoverContent>
           </Popover>
           <DropdownMenu>
