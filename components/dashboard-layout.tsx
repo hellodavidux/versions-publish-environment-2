@@ -90,11 +90,13 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
   const [isPullRequestRejected, setIsPullRequestRejected] = React.useState(false)
   const [restoredVersion, setRestoredVersion] = React.useState<string | null>(null)
   const [isDescriptionOpen, setIsDescriptionOpen] = React.useState(false)
+  const [isDescriptionInputOpen, setIsDescriptionInputOpen] = React.useState(false)
   const [description, setDescription] = React.useState("")
   const [hasPublishedWorkflow, setHasPublishedWorkflow] = React.useState(false)
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   const [isOlderVersionsOpen, setIsOlderVersionsOpen] = React.useState(false)
   const [publishedVersion, setPublishedVersion] = React.useState<string>("v2.3.9")
+  const [isEnvironmentSelectorOpen, setIsEnvironmentSelectorOpen] = React.useState(false)
   const { toast } = useToast()
 
   const triggerConfetti = () => {
@@ -403,7 +405,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
                         <span className="font-normal text-sm text-muted-foreground">v2.3.8</span>
                       </div>
-                      <span className="text-xs text-muted-foreground block mt-0.5">Sarah Miller <span className="mx-0.5">·</span> 1w ago</span>
+                      <span className="text-xs text-muted-foreground block mt-0.5">Sarah Miller <span className="mx-0.5">·</span> 3m ago</span>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
@@ -554,7 +556,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       <div className="flex items-center gap-1.5">
                         <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPullRequestApproved ? 'bg-gray-400 border-gray-300' : 'bg-black border-gray-500'}`}></div>
                         <span className="font-normal text-sm text-muted-foreground">v2.4.0</span>
-                        {!isPullRequestApproved && <span className="px-2 py-0.5 rounded-lg text-xs font-medium text-black bg-gray-200">Pull Request</span>}
+                        {!isPullRequestApproved && <span className="px-2 py-0.5 rounded-lg text-xs font-medium text-black bg-gray-300 border border-gray-200">Pull Request</span>}
                       </div>
                       <span className="text-xs text-muted-foreground block mt-0.5">Alex Chen <span className="mx-0.5">·</span> 2d ago</span>
                     </div>
@@ -656,7 +658,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
                         <span className="font-normal text-sm text-muted-foreground">v2.3.8</span>
                       </div>
-                      <span className="text-xs text-muted-foreground block mt-0.5">Sarah Miller <span className="mx-0.5">·</span> 1w ago</span>
+                      <span className="text-xs text-muted-foreground block mt-0.5">Sarah Miller <span className="mx-0.5">·</span> 3m ago</span>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
@@ -753,50 +755,10 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
             )}
             <PopoverContent align="end" className="w-64 p-0" sideOffset={12}>
               <div className="space-y-0 w-full">
-                  <div className="px-4 pt-3 pb-3 w-full bg-muted/30">
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
-                      <span className="text-sm text-muted-foreground font-normal">Publish current Draft</span>
-                    </div>
+                  <div className="px-4 pt-2 pb-2 w-full bg-muted/50">
+                    <span className="text-xs text-muted-foreground font-normal">Publish current workflow draft</span>
                   </div>
-                  <div className="px-4 py-2 w-full">
-                    <Popover open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
-                      <PopoverTrigger asChild>
-                        <button 
-                          className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Add description
-                        </button>
-                      </PopoverTrigger>
-                    <PopoverContent 
-                      align="start" 
-                      className="w-80 p-4" 
-                      sideOffset={8}
-                    >
-                      <div className="space-y-4">
-                        <Label className="text-sm font-medium">Description</Label>
-                        <Textarea
-                          placeholder="Add a description..."
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          className="min-h-[200px] resize-none text-sm"
-                          autoFocus
-                        />
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => setIsDescriptionOpen(false)}
-                        >
-                          Done
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                  </div>
-                  <div className="h-px bg-border w-full"></div>
-                  <div className="px-4 py-2 w-full">
+                  <div className="px-4 py-1 w-full">
                     <button 
                       className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
                       onClick={() => {
@@ -809,26 +771,60 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       {showReviewChangesDot && <span className="h-3 w-3 rounded-full bg-black border-2 border-gray-200 flex-shrink-0"></span>}
                     </button>
                   </div>
-                  <div className="h-px bg-border w-full"></div>
-                  <div className="w-full px-4 py-3">
+                  <div className="px-4 py-1 w-full">
                     <div className="space-y-2.5 w-full">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
+                      <button 
+                        className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
+                        onClick={() => setIsDescriptionInputOpen(!isDescriptionInputOpen)}
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add description
+                      </button>
+                      {isDescriptionInputOpen && (
+                        <div className="space-y-2 px-2 -mx-2">
+                          <Textarea
+                            placeholder="Add a description..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="min-h-[100px] resize-none text-sm"
+                            autoFocus
+                          />
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => setIsDescriptionInputOpen(false)}
+                          >
+                            Done
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-full px-4 py-2">
+                    <div className="space-y-2.5 w-full">
+                      <button 
+                        className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
+                        onClick={() => setIsEnvironmentSelectorOpen(!isEnvironmentSelectorOpen)}
+                      >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                           <circle cx="12" cy="12" r="10"/>
                           <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
                           <path d="M2 12h20"/>
                         </svg>
                         <span className="text-sm text-foreground font-normal">Environment</span>
-                      </div>
-                      <Select value={publishEnvironment} onValueChange={setPublishEnvironment}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select environment" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="staging">Staging</SelectItem>
-                          <SelectItem value="production">Production</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      </button>
+                      {isEnvironmentSelectorOpen && (
+                        <Select value={publishEnvironment} onValueChange={setPublishEnvironment}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select environment" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="staging">Staging</SelectItem>
+                            <SelectItem value="production">Production</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   </div>
                   <div className="h-px bg-border w-full"></div>
