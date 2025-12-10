@@ -24,6 +24,8 @@ import {
   RotateCw,
   Check,
   Globe,
+  Save,
+  Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -33,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
@@ -81,7 +84,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
   const [isVersionSidebarOpen, setIsVersionSidebarOpen] = React.useState(false)
   const [selectedVersion, setSelectedVersion] = React.useState<string | null>(null)
   const [isPreviewing, setIsPreviewing] = React.useState(false)
-  const [environment, setEnvironment] = React.useState("production")
+  const [environment, setEnvironment] = React.useState("development")
   const [publishEnvironment, setPublishEnvironment] = React.useState("production")
   const [showPublishDot, setShowPublishDot] = React.useState(true)
   const [showPublishedDot, setShowPublishedDot] = React.useState(true)
@@ -89,6 +92,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
   const [isPullRequestApproved, setIsPullRequestApproved] = React.useState(false)
   const [isPullRequestRejected, setIsPullRequestRejected] = React.useState(false)
   const [restoredVersion, setRestoredVersion] = React.useState<string | null>(null)
+  const [currentDraftVersion, setCurrentDraftVersion] = React.useState<string>("v2.4.1")
   const [isDescriptionOpen, setIsDescriptionOpen] = React.useState(false)
   const [isDescriptionInputOpen, setIsDescriptionInputOpen] = React.useState(false)
   const [description, setDescription] = React.useState("")
@@ -97,6 +101,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
   const [isOlderVersionsOpen, setIsOlderVersionsOpen] = React.useState(false)
   const [publishedVersion, setPublishedVersion] = React.useState<string>("v2.3.9")
   const [isEnvironmentSelectorOpen, setIsEnvironmentSelectorOpen] = React.useState(false)
+  const [hasOpenedEnvironmentDropdown, setHasOpenedEnvironmentDropdown] = React.useState(false)
   const { toast } = useToast()
 
   const triggerConfetti = () => {
@@ -123,7 +128,6 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
             className="h-8 w-8"
           />
           <span className="text-sm font-medium text-foreground">Antlio Testing / Sidebar</span>
-          <span className="text-xs text-muted-foreground/70 font-normal ml-2 px-2 py-0.5 rounded bg-muted/40">autosaved</span>
         </div>
 
         {/* Center: Navigation Tabs */}
@@ -183,54 +187,57 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
               </TooltipContent>
             </Tooltip>
           <div className="h-4 w-px bg-border"></div>
-          <Popover open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon-sm" className="h-8 w-8 bg-muted hover:bg-muted/70 cursor-pointer transition-colors">
+                <Save className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-white text-foreground border border-border" hideArrow sideOffset={8}>
+              <p>Save</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenu onOpenChange={(open) => {
+            if (open) {
+              setHasOpenedEnvironmentDropdown(true)
+            }
+          }}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon-sm" className="h-8 w-8 bg-muted hover:bg-muted/70 cursor-pointer transition-colors">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
+                {!hasOpenedEnvironmentDropdown ? (
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon-sm" className="h-8 w-8 bg-muted hover:bg-muted/70 cursor-pointer transition-colors">
+                      <Globe className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                ) : (
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon-sm" className="h-8 w-8 bg-muted hover:bg-muted/70 cursor-pointer transition-colors">
+                      <Globe className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                )}
               </TooltipTrigger>
               <TooltipContent className="bg-white text-foreground border border-border" hideArrow sideOffset={8}>
-                <p>Workflow settings</p>
+                <p>Select environment</p>
               </TooltipContent>
             </Tooltip>
-            <PopoverContent align="end" className="w-64" sideOffset={12}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"/>
-                      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-                      <path d="M2 12h20"/>
-                    </svg>
-                    Environment
-                  </Label>
-                  <Select value={environment} onValueChange={setEnvironment}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select environment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="staging">Staging</SelectItem>
-                      <SelectItem value="production">Production</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel className="text-muted-foreground font-normal">Select Environment</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setEnvironment("development")}>
+                <div className="flex items-center justify-between w-full">
+                  <span>Development</span>
+                  {environment === "development" && <Check className="h-4 w-4" />}
                 </div>
-                <div className="pt-2 border-t border-border">
-                  <button 
-                    className="text-sm text-foreground hover:text-foreground/80 transition-colors text-left"
-                    onClick={() => {
-                      // Handle manage environments click
-                      setIsSettingsOpen(false);
-                    }}
-                  >
-                    Manage environments
-                  </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setEnvironment("production")}>
+                <div className="flex items-center justify-between w-full">
+                  <span>Production</span>
+                  {environment === "production" && <Check className="h-4 w-4" />}
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Popover open={isDraftOpen} onOpenChange={setIsDraftOpen}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -238,79 +245,97 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   <Button 
                     variant={isPublished ? "outline" : "ghost"} 
                     size="icon-sm" 
-                    className={`h-8 w-auto gap-1.5 cursor-pointer transition-colors relative px-2 ${
+                    className={`h-8 w-25 gap-1.5 cursor-pointer transition-colors relative px-2 ${
                       isPublished 
                         ? "bg-white hover:bg-white border-border" 
                         : "bg-muted hover:bg-muted/70"
                     }`}
                   >
                     <div className={`h-2 w-2 rounded-full border ${isPublished ? 'bg-green-500 border-green-300' : 'bg-gray-400 border-gray-300'}`}></div>
-                    <span className="text-muted-foreground">{isPublished ? (publishedVersion === "Draft" ? "Draft" : `v.${publishedVersion.replace("v", "")}`) : "Draft"}</span>
+                    <span className="text-muted-foreground">{isPublished ? (publishedVersion === "Draft" ? "Draft" : "Published") : "Draft"}</span>
                     {showPublishedDot && <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-black border-2 border-gray-200"></span>}
                   </Button>
                 </PopoverTrigger>
               </TooltipTrigger>
               <TooltipContent className="bg-white text-foreground border border-border" hideArrow sideOffset={8}>
-                <p>Review versions or unpublish</p>
+                <p>Change published status and versions</p>
               </TooltipContent>
             </Tooltip>
             <PopoverContent align="end" className="w-80 p-0" sideOffset={12}>
-              <div className="p-4 border-b">
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg">
-                  <Image
-                    src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
-                    alt="Profile"
-                    width={24}
-                    height={24}
-                    className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
-                  />
-                  <div className="flex-1 min-w-0 -ml-2">
+              <div className="px-4 py-3 bg-gray-100 border">
+                <div className="group relative flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPublished ? 'bg-green-500 border-green-300' : 'bg-gray-400 border-gray-300'}`}></div>
-                      <span className="font-normal text-sm text-muted-foreground">{publishedVersion}</span>
-                      <span className="px-2 py-0.5 rounded-lg text-xs font-medium text-muted-foreground bg-white border border-gray-300 flex items-center gap-1">
+                      <span className="font-medium text-sm text-muted-foreground">{publishedVersion}</span>
+                      <span className="px-2 py-0.5 rounded-lg text-xs font-normal text-muted-foreground   flex items-center gap-1">
                         <Globe className="h-3 w-3" />
                         Production
                       </span>
                     </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago</span>
                   </div>
-                  <Switch 
-                    checked={isPublished} 
-                    onCheckedChange={(checked) => {
-                      setIsPublished(checked)
-                      toast({
-                        title: checked ? "Project published" : "Project unpublished",
-                        description: checked ? "This project is now published" : "This project is now unpublished",
-                      })
-                    }} 
-                    className="cursor-pointer scale-125"
-                  >
-                    <Cloud className="h-3 w-3 text-gray-500" />
-                  </Switch>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Switch 
+                          checked={isPublished} 
+                          onCheckedChange={(checked) => {
+                            setIsPublished(checked)
+                            toast({
+                              title: checked ? "Project published" : "Project unpublished",
+                              description: checked ? "This project is now published" : "This project is now unpublished",
+                            })
+                          }} 
+                          className="cursor-pointer scale-125"
+                        >
+                          <Cloud className="h-3 w-3 text-gray-500" />
+                        </Switch>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-white text-foreground border border-border" hideArrow sideOffset={8}>
+                      <p>{isPublished ? "Unpublish this version" : "Republish version"}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
               <div className="p-4">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase mb-2">Version history</h3>
                 <div className="space-y-0 relative">
-                  {/* Vertical line connecting dots - aligned with header */}
-                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-300"></div>
                   {/* Restored Version - Show first */}
-                   {restoredVersion === "Draft" && (
-                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
-                     <Image
-                       src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
-                       alt="Profile"
-                       width={24}
-                       height={24}
-                       className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
-                     />
+                   {restoredVersion && restoredVersion !== "Draft" && (
+                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                     {restoredVersion === "v2.3.9" || restoredVersion === "v2.3.6" ? (
+                       <Image
+                         src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
+                         alt="Profile"
+                         width={24}
+                         height={24}
+                         className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
+                       />
+                     ) : restoredVersion === "v2.3.8" || restoredVersion === "v2.3.10" || restoredVersion === "v2.3.5" ? (
+                       <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
+                         <span className="text-[10px] font-medium text-gray-600">SM</span>
+                       </div>
+                     ) : restoredVersion === "v2.4.0" || restoredVersion === "v2.3.7" ? (
+                       <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
+                         <span className="text-[10px] font-medium text-gray-600">AC</span>
+                       </div>
+                     ) : (
+                       <Image
+                         src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
+                         alt="Profile"
+                         width={24}
+                         height={24}
+                         className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
+                       />
+                     )}
                      <div className="flex-1 min-w-0 -ml-2">
                        <div className="flex items-center gap-1.5">
                          <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
-                         <span className="font-normal text-sm text-muted-foreground">Draft</span>
+                         <span className="font-normal text-sm text-muted-foreground">{restoredVersion}</span>
+                         <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-50 flex items-center gap-1">Draft</span>
                        </div>
-                       <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> Now</span>
+                       <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current</span>
                      </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
@@ -320,13 +345,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setSelectedVersion("Draft"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
                             setPublishedVersion("Draft");
                             setIsPublished(true);
                             setIsDraftOpen(false);
@@ -341,8 +360,8 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     </div>
                   </div>
                   )}
-                  {restoredVersion === "v2.3.9" && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  {false && restoredVersion === "v2.3.9" && (
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <Image
                       src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                       alt="Profile"
@@ -366,17 +385,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.9"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            View
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            View version
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setRestoredVersion("v2.3.9");
+                            setCurrentDraftVersion("v2.3.9");
                             setShowPublishDot(true);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
                           }}>
                             <RotateCw className="h-3.5 w-3.5 mr-2" />
-                            Restore version
+                            Restore version as draft
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
@@ -387,7 +407,12 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                               description: "This project is now unpublished",
                             })
                           }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
+                            <div className="relative h-3.5 w-3.5 mr-2">
+                              <Cloud className="h-3.5 w-3.5" />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="h-[18px] w-[1.5px] bg-foreground rotate-45 origin-center"></div>
+                              </div>
+                            </div>
                             Unpublish version
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -395,8 +420,8 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     </div>
                   </div>
                   )}
-                  {restoredVersion === "v2.3.8" && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  {false && restoredVersion === "v2.3.8" && (
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                       <span className="text-[10px] font-medium text-gray-600">SM</span>
                     </div>
@@ -416,21 +441,71 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.8"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            View
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            View version
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setRestoredVersion("v2.3.8");
+                            setCurrentDraftVersion("v2.3.8");
                             setShowPublishDot(true);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
                           }}>
                             <RotateCw className="h-3.5 w-3.5 mr-2" />
-                            Restore version
+                            Restore version as draft
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
+                            setPublishedVersion("v2.4.0");
+                            setIsPublished(true);
+                            setIsDraftOpen(false);
+                            setIsRefreshing(true);
+                            setTimeout(() => setIsRefreshing(false), 600);
+                          }}>
+                            <Cloud className="h-3.5 w-3.5 mr-2" />
+                            Publish version
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  )}
+                  {false && restoredVersion === "v2.3.10" && (
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
+                      <span className="text-[10px] font-medium text-gray-600">SM</span>
+                    </div>
+                    <div className="flex-1 min-w-0 -ml-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
+                        <span className="font-normal text-sm text-muted-foreground">v2.3.10</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground block mt-0.5">Sarah Miller <span className="mx-0.5">·</span> m ago</span>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.10"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            View version
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setRestoredVersion("v2.3.10");
+                            setCurrentDraftVersion("v2.3.10");
+                            setShowPublishDot(true);
+                            setIsRefreshing(true);
+                            setTimeout(() => setIsRefreshing(false), 600);
+                          }}>
+                            <RotateCw className="h-3.5 w-3.5 mr-2" />
+                            Restore version as draft
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => {
                             setPublishedVersion("v2.4.0");
                             setIsPublished(true);
                             setIsDraftOpen(false);
@@ -446,9 +521,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </div>
                   )}
                   
-                  {/* v2.4.0 Version - Show first when approved */}
-                  {isPullRequestApproved && (
-                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  {/* v2.4.0 Version - Show first when approved but not restored */}
+                  {isPullRequestApproved && restoredVersion !== "v2.4.0" && (
+                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                      <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                        <span className="text-[10px] font-medium text-gray-600">AC</span>
                      </div>
@@ -468,12 +543,14 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedVersion("v2.4.0"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            Review
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            Review changes
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setShowPublishedDot(false);
                             setIsPullRequestApproved(true);
+                            setRestoredVersion("v2.4.0");
+                            setCurrentDraftVersion("v2.4.0");
                             setShowPublishDot(true);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
@@ -483,7 +560,6 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
                             setPublishedVersion("v2.4.0");
                             setIsPublished(true);
                             setIsDraftOpen(false);
@@ -499,9 +575,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </div>
                   )}
                   
-                  {/* Draft Version - Hide if restored */}
-                  {restoredVersion !== "Draft" && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  {/* Draft Version - Show if not restored or if v2.4.1 is still the current draft */}
+                  {(!restoredVersion || currentDraftVersion === "v2.4.1") && (
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <Image
                       src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                       alt="Profile"
@@ -511,10 +587,11 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     />
                     <div className="flex-1 min-w-0 -ml-2">
                       <div className="flex items-center gap-1.5">
-                        <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
-                        <span className="font-normal text-sm text-muted-foreground">Draft</span>
+                        <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${currentDraftVersion === "v2.4.1" ? 'bg-gray-400 border-gray-300' : 'bg-gray-400 border-gray-300'}`}></div>
+                        <span className="font-normal text-sm text-muted-foreground">v2.4.1</span>
+                        {currentDraftVersion === "v2.4.1" && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-50 flex items-center gap-1">Draft</span>}
                       </div>
-                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> Now</span>
+                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current</span>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
@@ -524,13 +601,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setSelectedVersion("Draft"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
                             setPublishedVersion("v2.4.0");
                             setIsPublished(true);
                             setIsDraftOpen(false);
@@ -546,9 +617,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </div>
                   )}
                   
-                  {/* v2.4.0 Version - Show in original position when not approved and not rejected */}
-                  {!isPullRequestApproved && !isPullRequestRejected && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  {/* v2.4.0 Version - Show in original position when not approved, not rejected, and not restored */}
+                  {!isPullRequestApproved && !isPullRequestRejected && restoredVersion !== "v2.4.0" && (
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                       <span className="text-[10px] font-medium text-gray-600">AC</span>
                     </div>
@@ -556,7 +627,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       <div className="flex items-center gap-1.5">
                         <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPullRequestApproved ? 'bg-gray-400 border-gray-300' : 'bg-black border-gray-500'}`}></div>
                         <span className="font-normal text-sm text-muted-foreground">v2.4.0</span>
-                        {!isPullRequestApproved && <span className="px-2 py-0.5 rounded-lg text-xs font-medium text-black bg-gray-300 border border-gray-200">Pull Request</span>}
+                        {!isPullRequestApproved && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-black bg-gray-200 flex items-center gap-1"><GitBranch className="h-3 w-3" />Pull Request</span>}
                       </div>
                       <span className="text-xs text-muted-foreground block mt-0.5">Alex Chen <span className="mx-0.5">·</span> 2d ago</span>
                     </div>
@@ -569,12 +640,14 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedVersion("v2.4.0"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            Review
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            Review changes
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setShowPublishedDot(false);
                             setIsPullRequestApproved(true);
+                            setRestoredVersion("v2.4.0");
+                            setCurrentDraftVersion("v2.4.0");
                             setShowPublishDot(true);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
@@ -591,7 +664,6 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
                             setIsDraftOpen(false);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
@@ -607,7 +679,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   
                   {/* v2.3.9 Live Version - Hide if restored */}
                   {restoredVersion !== "v2.3.9" && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <Image
                       src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                       alt="Profile"
@@ -619,8 +691,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       <div className="flex items-center gap-1.5">
                         <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPublished ? 'bg-green-500 border-green-300' : 'bg-gray-400 border-gray-300'}`}></div>
                         <span className="font-normal text-sm text-muted-foreground">v2.3.9</span>
+                        {isPublished && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-50 flex items-center gap-1">Published</span>}
                       </div>
-                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago</span>
+                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline-block mr-1 align-middle" /> Production</span>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
@@ -630,6 +703,16 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => { 
+                            setSelectedVersion("v2.3.9"); 
+                            setIsDraftOpen(false); 
+                            setIsVersionSidebarOpen(true); 
+                            setIsPreviewing(true); 
+                          }}>
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            View version
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
                             triggerConfetti();
                             setIsPublished(false);
@@ -638,7 +721,12 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                               description: "This project is now unpublished",
                             })
                           }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
+                            <div className="relative h-3.5 w-3.5 mr-2">
+                              <Cloud className="h-3.5 w-3.5" />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="h-[18px] w-[1.5px] bg-foreground rotate-45 origin-center"></div>
+                              </div>
+                            </div>
                             Unpublish version
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -649,7 +737,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   
                   {/* v2.3.8 Version - Hide if restored */}
                   {restoredVersion !== "v2.3.8" && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                       <span className="text-[10px] font-medium text-gray-600">SM</span>
                     </div>
@@ -669,21 +757,71 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.8"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            View
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            View version
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setRestoredVersion("v2.3.8");
+                            setCurrentDraftVersion("v2.3.8");
                             setShowPublishDot(true);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
                           }}>
                             <RotateCw className="h-3.5 w-3.5 mr-2" />
-                            Restore version
+                            Restore version as draft
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
+                            setIsDraftOpen(false);
+                            setIsRefreshing(true);
+                            setTimeout(() => setIsRefreshing(false), 600);
+                          }}>
+                            <Cloud className="h-3.5 w-3.5 mr-2" />
+                            Publish version
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  )}
+                  
+                  {/* v2.3.10 Version - Sarah Miller duplicate */}
+                  {restoredVersion !== "v2.3.10" && (
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
+                      <span className="text-[10px] font-medium text-gray-600">SM</span>
+                    </div>
+                    <div className="flex-1 min-w-0 -ml-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
+                        <span className="font-normal text-sm text-muted-foreground">v2.3.10</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground block mt-0.5">Sarah Miller <span className="mx-0.5">·</span> m ago</span>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.10"); setIsDraftOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            View version
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setRestoredVersion("v2.3.10");
+                            setCurrentDraftVersion("v2.3.10");
+                            setShowPublishDot(true);
+                            setIsRefreshing(true);
+                            setTimeout(() => setIsRefreshing(false), 600);
+                          }}>
+                            <RotateCw className="h-3.5 w-3.5 mr-2" />
+                            Restore version as draft
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => {
                             setIsDraftOpen(false);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
@@ -708,7 +846,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     setIsOlderVersionsOpen(true);
                   }}
                 >
-                  View all history
+                  View all versions
                 </Button>
               </div>
             </PopoverContent>
@@ -753,82 +891,87 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 </Button>
               </PopoverTrigger>
             )}
-            <PopoverContent align="end" className="w-64 p-0" sideOffset={12}>
+            <PopoverContent align="end" className="w-72 p-0" sideOffset={12}>
               <div className="space-y-0 w-full">
-                  <div className="px-4 pt-2 pb-2 w-full bg-muted/50">
-                    <span className="text-xs text-muted-foreground font-normal">Publish current workflow draft</span>
+                  <div className="px-4 py-3 bg-gray-100 border">
+                    <div className="text-xs text-muted-foreground ">Last Published Version <span className="mx-0.5">·</span> 1m ago</div>
                   </div>
-                  <div className="px-4 py-1 w-full">
-                    <button 
-                      className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
-                      onClick={() => {
-                        setShowPublishDot(false);
-                        setShowReviewChangesDot(false);
-                      }}
-                    >
-                      <Link2 className="h-4 w-4" />
-                      <span className="flex-1">Review the changes</span>
-                      {showReviewChangesDot && <span className="h-3 w-3 rounded-full bg-black border-2 border-gray-200 flex-shrink-0"></span>}
-                    </button>
-                  </div>
-                  <div className="px-4 py-1 w-full">
-                    <div className="space-y-2.5 w-full">
+                  <div className="px-2 py-2 w-full">
+                    <div className="w-full">
                       <button 
-                        className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
-                        onClick={() => setIsDescriptionInputOpen(!isDescriptionInputOpen)}
+                        className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-1.5 px-2 rounded-md "
+                        onClick={() => {
+                          setShowPublishDot(false);
+                          setShowReviewChangesDot(false);
+                        }}
                       >
-                        <Plus className="h-4 w-4" />
-                        Add description
+                        <Link2 className="h-4 w-4" />
+                        <span className="">Review changes</span>
+                        {showReviewChangesDot && <span className="h-3 w-3 rounded-full bg-black border-2 border-gray-200 flex-shrink-0"></span>}
                       </button>
-                      {isDescriptionInputOpen && (
-                        <div className="space-y-2 px-2 -mx-2">
-                          <Textarea
-                            placeholder="Add a description..."
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="min-h-[100px] resize-none text-sm"
-                            autoFocus
-                          />
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="w-full"
-                            onClick={() => setIsDescriptionInputOpen(false)}
+                    </div>
+                    <div className="w-full">
+                      <div className="space-y-2.5 w-full">
+                        <button 
+                          className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-1.5 px-2 rounded-md "
+                          onClick={() => setIsDescriptionInputOpen(!isDescriptionInputOpen)}
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add description
+                        </button>
+                        {isDescriptionInputOpen && (
+                          <div className="space-y-2 px-2 -mx-2">
+                            <Textarea
+                              placeholder="Add a description..."
+                              value={description}
+                              onChange={(e) => setDescription(e.target.value)}
+                              className="min-h-[100px] resize-none text-sm"
+                              autoFocus
+                            />
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => setIsDescriptionInputOpen(false)}
+                            >
+                              Done
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-full">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button 
+                            className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-1.5 px-2 rounded-md "
                           >
-                            Done
-                          </Button>
-                        </div>
-                      )}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                              <circle cx="12" cy="12" r="10"/>
+                              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                              <path d="M2 12h20"/>
+                            </svg>
+                            <span className="text-sm text-foreground font-normal capitalize">{publishEnvironment}</span>
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48">
+                          <DropdownMenuItem onClick={() => setPublishEnvironment("development")}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>Development</span>
+                              {publishEnvironment === "development" && <Check className="h-4 w-4" />}
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setPublishEnvironment("production")}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>Production</span>
+                              {publishEnvironment === "production" && <Check className="h-4 w-4" />}
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                  <div className="w-full px-4 py-2">
-                    <div className="space-y-2.5 w-full">
-                      <button 
-                        className="w-full flex items-center gap-2 text-sm text-foreground hover:bg-muted/50 transition-colors text-left py-2 px-2 rounded-md -mx-2"
-                        onClick={() => setIsEnvironmentSelectorOpen(!isEnvironmentSelectorOpen)}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                          <circle cx="12" cy="12" r="10"/>
-                          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-                          <path d="M2 12h20"/>
-                        </svg>
-                        <span className="text-sm text-foreground font-normal">Environment</span>
-                      </button>
-                      {isEnvironmentSelectorOpen && (
-                        <Select value={publishEnvironment} onValueChange={setPublishEnvironment}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select environment" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="staging">Staging</SelectItem>
-                            <SelectItem value="production">Production</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  </div>
-                  <div className="h-px bg-border w-full"></div>
-                  <div className="px-4 pt-3 pb-4">
+                  <div className="px-4 pb-4">
                     <Button 
                       variant="default" 
                       size="sm" 
@@ -840,7 +983,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         setHasPublishedWorkflow(true);
                       }}
                     >
-                      Publish workflow
+                      Publish changes
                     </Button>
                   </div>
               </div>
@@ -1035,7 +1178,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {selectedVersion === "Draft" 
-                        ? "Now" 
+                        ? "current" 
                         : selectedVersion === "v2.3.9" 
                         ? "2m ago" 
                         : selectedVersion === "v2.4.0" 
@@ -1127,25 +1270,41 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
             </div>
             <div className="p-4">
               <div className="space-y-0 relative">
-                {/* Vertical line connecting dots */}
-                <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-300"></div>
-                
                 {/* Restored Version - Show first */}
-                {restoredVersion === "Draft" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
-                  <Image
-                    src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
-                    alt="Profile"
-                    width={24}
-                    height={24}
-                    className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
-                  />
+                {restoredVersion && restoredVersion !== "Draft" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  {restoredVersion === "v2.3.9" ? (
+                    <Image
+                      src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
+                      alt="Profile"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
+                    />
+                  ) : restoredVersion === "v2.3.8" || restoredVersion === "v2.3.10" ? (
+                    <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
+                      <span className="text-[10px] font-medium text-gray-600">SM</span>
+                    </div>
+                  ) : restoredVersion === "v2.4.0" ? (
+                    <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
+                      <span className="text-[10px] font-medium text-gray-600">AC</span>
+                    </div>
+                  ) : (
+                    <Image
+                      src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
+                      alt="Profile"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
+                    />
+                  )}
                   <div className="flex-1 min-w-0 -ml-2">
                     <div className="flex items-center gap-1.5">
                       <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
-                      <span className="font-normal text-sm text-muted-foreground">Draft</span>
+                      <span className="font-normal text-sm text-muted-foreground">{restoredVersion}</span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-50 border border-gray-300 flex items-center gap-1">Draft</span>
                     </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> Now</span>
+                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current</span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
@@ -1155,13 +1314,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => { setSelectedVersion("Draft"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => {
-                          triggerConfetti();
                           setIsOlderVersionsOpen(false);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
@@ -1174,8 +1327,8 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </div>
                 </div>
                 )}
-                {restoredVersion === "v2.3.9" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {false && restoredVersion === "v2.3.9" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <Image
                     src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                     alt="Profile"
@@ -1188,7 +1341,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       <div className="h-2 w-2 rounded-full bg-green-500 border border-green-300 flex-shrink-0"></div>
                       <span className="font-normal text-sm text-muted-foreground">v2.3.9</span>
                     </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago</span>
+                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline mr-1" /> rProduction</span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
@@ -1199,24 +1352,25 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.9"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.9");
+                          setCurrentDraftVersion("v2.3.9");
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
                 )}
-                {restoredVersion === "v2.3.8" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {false && restoredVersion === "v2.3.8" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">SM</span>
                   </div>
@@ -1236,24 +1390,25 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.8"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.8");
+                          setCurrentDraftVersion("v2.3.8");
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
                 )}
-                {restoredVersion === "v2.3.7" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {false && restoredVersion === "v2.3.7" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">AC</span>
                   </div>
@@ -1273,25 +1428,26 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.7"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.7");
-                          setShowPublishDot(true);
+                            setCurrentDraftVersion("v2.3.7");
+                            setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
                 )}
-                {restoredVersion === "v2.3.6" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {false && restoredVersion === "v2.3.6" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <Image
                     src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                     alt="Profile"
@@ -1315,25 +1471,26 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.6"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.6");
-                          setShowPublishDot(true);
+                            setCurrentDraftVersion("v2.3.6");
+                            setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
                 )}
-                {restoredVersion === "v2.3.5" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {false && restoredVersion === "v2.3.5" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">SM</span>
                   </div>
@@ -1353,17 +1510,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.5"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.5");
-                          setShowPublishDot(true);
+                            setCurrentDraftVersion("v2.3.5");
+                            setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1371,9 +1529,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 </div>
                 )}
                 
-                {/* v2.4.0 Version - Show first when approved (not rejected) */}
-                {isPullRequestApproved && !isPullRequestRejected && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {/* v2.4.0 Version - Show first when approved (not rejected) but not restored */}
+                {isPullRequestApproved && !isPullRequestRejected && restoredVersion !== "v2.4.0" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">AC</span>
                   </div>
@@ -1393,12 +1551,14 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.4.0"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
+                          <Eye className="h-3.5 w-3.5 mr-2" />
                           Review changes
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setShowPublishedDot(false);
                           setIsPullRequestApproved(true);
+                          setRestoredVersion("v2.4.0");
+                          setCurrentDraftVersion("v2.4.0");
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
@@ -1419,9 +1579,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 </div>
                 )}
                 
-                {/* Draft Version - Hide if restored */}
-                {restoredVersion !== "Draft" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {/* Draft Version - Show if not restored or if v2.4.1 is still the current draft */}
+                {(!restoredVersion || currentDraftVersion === "v2.4.1") && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <Image
                     src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                     alt="Profile"
@@ -1431,10 +1591,11 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   />
                   <div className="flex-1 min-w-0 -ml-2">
                     <div className="flex items-center gap-1.5">
-                      <div className="h-2 w-2 rounded-full bg-gray-400 border border-gray-300 flex-shrink-0"></div>
-                      <span className="font-normal text-sm text-muted-foreground">Draft</span>
+                      <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${currentDraftVersion === "v2.4.1" ? 'bg-blue-500 border-blue-300' : 'bg-gray-500 border-gray-300'}`}></div>
+                      <span className="font-normal text-sm text-muted-foreground">v2.4.1</span>
+                      {currentDraftVersion === "v2.4.1" && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-blue-500 bg-blue-50 flex items-center gap-1">Draft</span>}
                     </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> Now</span>
+                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current</span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
@@ -1444,13 +1605,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => { setSelectedVersion("Draft"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => {
-                          triggerConfetti();
                           setIsOlderVersionsOpen(false);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
@@ -1464,9 +1619,9 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 </div>
                 )}
                 
-                {/* v2.4.0 Version - Show in original position when not approved and not rejected */}
-                {!isPullRequestApproved && !isPullRequestRejected && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                {/* v2.4.0 Version - Show in original position when not approved, not rejected, and not restored */}
+                {!isPullRequestApproved && !isPullRequestRejected && restoredVersion !== "v2.4.0" && (
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">AC</span>
                   </div>
@@ -1474,7 +1629,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     <div className="flex items-center gap-1.5">
                       <div className="h-2 w-2 rounded-full bg-black border border-gray-500 flex-shrink-0"></div>
                       <span className="font-normal text-sm text-muted-foreground">v2.4.0</span>
-                      {!isPullRequestApproved && <span className="px-2 py-0.5 rounded-lg text-xs font-medium text-black bg-gray-200">Pull Request</span>}
+                      {!isPullRequestApproved && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-black bg-gray-200 border border-gray-500 flex items-center gap-1"><GitBranch className="h-3 w-3" />Pull Request</span>}
                     </div>
                     <span className="text-xs text-muted-foreground block mt-0.5">Alex Chen <span className="mx-0.5">·</span> 2d ago</span>
                   </div>
@@ -1487,12 +1642,14 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.4.0"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
+                          <Eye className="h-3.5 w-3.5 mr-2" />
                           Review changes
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setShowPublishedDot(false);
                           setIsPullRequestApproved(true);
+                          setRestoredVersion("v2.4.0");
+                          setCurrentDraftVersion("v2.4.0");
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
@@ -1509,7 +1666,6 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => {
-                            triggerConfetti();
                             setIsDraftOpen(false);
                             setIsRefreshing(true);
                             setTimeout(() => setIsRefreshing(false), 600);
@@ -1525,7 +1681,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   
                   {/* v2.3.9 Live Version - Hide if restored */}
                   {restoredVersion !== "v2.3.9" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <Image
                     src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                     alt="Profile"
@@ -1535,10 +1691,11 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   />
                   <div className="flex-1 min-w-0 -ml-2">
                     <div className="flex items-center gap-1.5">
-                      <div className="h-2 w-2 rounded-full bg-green-500 border border-green-300 flex-shrink-0"></div>
+                      <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPublished ? 'bg-green-500 border-green-300' : 'bg-gray-400 border-gray-300'}`}></div>
                       <span className="font-normal text-sm text-muted-foreground">v2.3.9</span>
+                      {isPublished && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-50 border border-green-300 flex items-center gap-1">Published</span>}
                     </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago</span>
+                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline mr-1" /> rProduction</span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
@@ -1549,17 +1706,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.9"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.9");
+                          setCurrentDraftVersion("v2.3.9");
                           setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => {
@@ -1570,7 +1728,12 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                             description: "This project is now unpublished",
                           })
                         }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
+                          <div className="relative h-3.5 w-3.5 mr-2">
+                            <Cloud className="h-3.5 w-3.5" />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="h-[18px] w-[1.5px] bg-foreground rotate-45 origin-center"></div>
+                            </div>
+                          </div>
                           Unpublish version
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -1581,7 +1744,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 
                 {/* v2.3.8 Version - Hide if restored */}
                 {restoredVersion !== "v2.3.8" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">SM</span>
                   </div>
@@ -1601,16 +1764,17 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.8"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.8");
+                          setCurrentDraftVersion("v2.3.8");
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1620,7 +1784,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 
                 {/* v2.3.7 Version - Hide if restored */}
                 {restoredVersion !== "v2.3.7" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">AC</span>
                   </div>
@@ -1640,17 +1804,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.7"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.7");
-                          setShowPublishDot(true);
+                            setCurrentDraftVersion("v2.3.7");
+                            setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1660,7 +1825,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 
                 {/* v2.3.6 Version - Hide if restored */}
                 {restoredVersion !== "v2.3.6" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <Image
                     src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
                     alt="Profile"
@@ -1684,17 +1849,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.6"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.6");
-                          setShowPublishDot(true);
+                            setCurrentDraftVersion("v2.3.6");
+                            setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1704,7 +1870,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 
                 {/* v2.3.5 Version - Hide if restored */}
                 {restoredVersion !== "v2.3.5" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors ml-1">
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
                     <span className="text-[10px] font-medium text-gray-600">SM</span>
                   </div>
@@ -1724,17 +1890,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setSelectedVersion("v2.3.5"); setIsOlderVersionsOpen(false); setIsVersionSidebarOpen(true); setIsPreviewing(true); }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          View
+                          <Eye className="h-3.5 w-3.5 mr-2" />
+                          View version
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setRestoredVersion("v2.3.5");
-                          setShowPublishDot(true);
+                            setCurrentDraftVersion("v2.3.5");
+                            setShowPublishDot(true);
                           setIsRefreshing(true);
                           setTimeout(() => setIsRefreshing(false), 600);
                         }}>
                           <RotateCw className="h-3.5 w-3.5 mr-2" />
-                          Restore version
+                          Restore version as draft
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
