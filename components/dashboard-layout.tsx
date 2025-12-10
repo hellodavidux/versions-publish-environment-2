@@ -26,6 +26,7 @@ import {
   Globe,
   Save,
   Eye,
+  Code,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -93,6 +94,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
   const [isPullRequestRejected, setIsPullRequestRejected] = React.useState(false)
   const [restoredVersion, setRestoredVersion] = React.useState<string | null>(null)
   const [currentDraftVersion, setCurrentDraftVersion] = React.useState<string>("v19")
+  const [isAnimatingVersion, setIsAnimatingVersion] = React.useState<string | null>(null)
   const [isDescriptionOpen, setIsDescriptionOpen] = React.useState(false)
   const [isDescriptionInputOpen, setIsDescriptionInputOpen] = React.useState(false)
   const [description, setDescription] = React.useState("")
@@ -103,6 +105,18 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
   const [isEnvironmentSelectorOpen, setIsEnvironmentSelectorOpen] = React.useState(false)
   const [hasOpenedEnvironmentDropdown, setHasOpenedEnvironmentDropdown] = React.useState(false)
   const { toast } = useToast()
+
+  // Trigger animation when a version is restored
+  React.useEffect(() => {
+    if (restoredVersion && restoredVersion !== "Draft") {
+      setIsAnimatingVersion(restoredVersion)
+      // Clear animation state after animation completes (800ms animation duration)
+      const timer = setTimeout(() => {
+        setIsAnimatingVersion(null)
+      }, 800)
+      return () => clearTimeout(timer)
+    }
+  }, [restoredVersion])
 
   const triggerConfetti = () => {
     confetti({
@@ -239,7 +253,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
             </DropdownMenuContent>
           </DropdownMenu>
           <Popover open={isDraftOpen} onOpenChange={setIsDraftOpen}>
-            <Tooltip>
+            <Tooltip open={!isDraftOpen ? undefined : false}>
               <TooltipTrigger asChild>
                 <PopoverTrigger asChild>
                   <Button 
@@ -301,9 +315,13 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
               <div className="p-4">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase mb-2">Version history</h3>
                 <div className="space-y-0 relative">
-                  {/* Restored Version - Show first */}
+                  {/* Restored Version - Show first when restored/approved */}
                    {restoredVersion && restoredVersion !== "Draft" && (
-                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                   <div className={`group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 ${
+                     isAnimatingVersion === restoredVersion 
+                       ? 'animate-slideUp' 
+                       : ''
+                   }`}>
                      {restoredVersion === "v16" || restoredVersion === "v13" ? (
                        <Image
                          src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
@@ -420,6 +438,47 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     </div>
                   </div>
                   )}
+                  
+                  {/* Draft Version v19 - Always show as second item */}
+                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <Image
+                      src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
+                      alt="Profile"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
+                    />
+                    <div className="flex-1 min-w-0 -ml-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${currentDraftVersion === "v19" ? 'bg-gray-400 border-gray-300' : 'bg-gray-400 border-gray-300'}`}></div>
+                        <span className="font-normal text-sm text-muted-foreground">v19</span>
+                        {currentDraftVersion === "v19" && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-200 flex items-center gap-1">Draft</span>}
+                      </div>
+                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> Now <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline-block mr-1 align-middle" /> Development</span>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => {
+                            setPublishedVersion("v18");
+                            setIsPublished(true);
+                            setIsDraftOpen(false);
+                            setIsRefreshing(true);
+                            setTimeout(() => setIsRefreshing(false), 600);
+                          }}>
+                            <Cloud className="h-3.5 w-3.5 mr-2" />
+                            Publish version
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  
                   {false && restoredVersion === "v15" && (
                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 ml-2 -ml-2 mr-2">
@@ -575,48 +634,6 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </div>
                   )}
                   
-                  {/* Draft Version - Show if not restored or if v19 is still the current draft */}
-                  {(!restoredVersion || currentDraftVersion === "v19") && (
-                  <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Image
-                      src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
-                      alt="Profile"
-                      width={24}
-                      height={24}
-                      className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
-                    />
-                    <div className="flex-1 min-w-0 -ml-2">
-                      <div className="flex items-center gap-1.5">
-                        <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${currentDraftVersion === "v19" ? 'bg-gray-400 border-gray-300' : 'bg-gray-400 border-gray-300'}`}></div>
-                        <span className="font-normal text-sm text-muted-foreground">v19</span>
-                        {currentDraftVersion === "v19" && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-200 flex items-center gap-1">Draft</span>}
-                      </div>
-                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current</span>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                            <MoreVertical className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            setPublishedVersion("v18");
-                            setIsPublished(true);
-                            setIsDraftOpen(false);
-                            setIsRefreshing(true);
-                            setTimeout(() => setIsRefreshing(false), 600);
-                          }}>
-                            <Cloud className="h-3.5 w-3.5 mr-2" />
-                            Publish version
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                  )}
-                  
                   {/* v18 Version - Show in original position when not approved, not rejected, and not restored */}
                   {!isPullRequestApproved && !isPullRequestRejected && restoredVersion !== "v18" && (
                   <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
@@ -691,7 +708,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                       <div className="flex items-center gap-1.5">
                         <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPublished ? 'bg-green-500 border-green-300' : 'bg-gray-400 border-gray-300'}`}></div>
                         <span className="font-normal text-sm text-muted-foreground">v16</span>
-                        {isPublished && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-50 flex items-center gap-1">Published</span>}
+                        {isPublished && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-100 flex items-center gap-1">Published</span>}
                       </div>
                       <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline-block mr-1 align-middle" /> Production</span>
                     </div>
@@ -867,7 +884,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
           </Tooltip>
           <Popover open={isPublishOpen} onOpenChange={setIsPublishOpen}>
             {!hasPublishedWorkflow && (
-              <Tooltip>
+              <Tooltip open={!isPublishOpen ? undefined : false}>
                 <TooltipTrigger asChild>
                   <PopoverTrigger asChild>
                     <Button variant="default" size="sm" className="h-8 gap-1.5 bg-foreground text-background hover:bg-foreground/85 relative cursor-pointer transition-colors">
@@ -914,7 +931,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-white text-foreground border border-border" hideArrow sideOffset={8}>
-                        <p>Change published status and versions</p>
+                        <p>{isPublished ? "Unpublish version" : "Republish version"}</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -977,6 +994,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-48">
+                          <DropdownMenuLabel className="text-muted-foreground font-normal">Select environment</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => setPublishEnvironment("development")}>
                             <div className="flex items-center justify-between w-full">
                               <span>Development</span>
@@ -1292,9 +1310,13 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
             </div>
             <div className="p-4">
               <div className="space-y-0 relative">
-                {/* Restored Version - Show first */}
+                {/* Restored Version - Show first when restored/approved */}
                 {restoredVersion && restoredVersion !== "Draft" && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className={`group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 ${
+                  isAnimatingVersion === restoredVersion 
+                    ? 'animate-slideUp' 
+                    : ''
+                }`}>
                   {restoredVersion === "v16" ? (
                     <Image
                       src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
@@ -1349,6 +1371,45 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                   </div>
                 </div>
                 )}
+                
+                {/* Draft Version v19 - Always show as second item */}
+                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <Image
+                    src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
+                    alt="Profile"
+                    width={24}
+                    height={24}
+                    className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
+                  />
+                  <div className="flex-1 min-w-0 -ml-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${currentDraftVersion === "v19" ? 'bg-blue-500 border-blue-300' : 'bg-gray-500 border-gray-300'}`}></div>
+                      <span className="font-normal text-sm text-muted-foreground">v19</span>
+                      {currentDraftVersion === "v19" && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-blue-500 bg-blue-50 flex items-center gap-1">Draft</span>}
+                    </div>
+                      <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline-block mr-1 align-middle" /> Development</span>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => {
+                            setIsOlderVersionsOpen(false);
+                            setIsRefreshing(true);
+                            setTimeout(() => setIsRefreshing(false), 600);
+                          }}>
+                            <Cloud className="h-3.5 w-3.5 mr-2" />
+                            Publish version
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                
                 {false && restoredVersion === "v16" && (
                 <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <Image
@@ -1601,46 +1662,6 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                 </div>
                 )}
                 
-                {/* Draft Version - Show if not restored or if v19 is still the current draft */}
-                {(!restoredVersion || currentDraftVersion === "v19") && (
-                <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <Image
-                    src="https://ca.slack-edge.com/T03V7MR4L9Y-U0451BQJQLD-917cf565ddd2-512"
-                    alt="Profile"
-                    width={24}
-                    height={24}
-                    className="h-6 w-6 rounded-full object-cover flex-shrink-0 ml-2 -ml-2 mr-2"
-                  />
-                  <div className="flex-1 min-w-0 -ml-2">
-                    <div className="flex items-center gap-1.5">
-                      <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${currentDraftVersion === "v19" ? 'bg-blue-500 border-blue-300' : 'bg-gray-500 border-gray-300'}`}></div>
-                      <span className="font-normal text-sm text-muted-foreground">v19</span>
-                      {currentDraftVersion === "v19" && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-blue-500 bg-blue-50 flex items-center gap-1">Draft</span>}
-                    </div>
-                    <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> current</span>
-                  </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <MoreVertical className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          setIsOlderVersionsOpen(false);
-                          setIsRefreshing(true);
-                          setTimeout(() => setIsRefreshing(false), 600);
-                        }}>
-                          <Cloud className="h-3.5 w-3.5 mr-2" />
-                          Publish version
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                )}
-                
                 {/* v18 Version - Show in original position when not approved, not rejected, and not restored */}
                 {!isPullRequestApproved && !isPullRequestRejected && restoredVersion !== "v18" && (
                 <div className="group relative flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors">
@@ -1715,7 +1736,7 @@ export function DashboardLayout({ children, onRun }: DashboardLayoutProps) {
                     <div className="flex items-center gap-1.5">
                       <div className={`h-2 w-2 rounded-full border flex-shrink-0 ${isPublished ? 'bg-green-500 border-green-300' : 'bg-gray-400 border-gray-300'}`}></div>
                       <span className="font-normal text-sm text-muted-foreground">v16</span>
-                      {isPublished && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-50 border border-green-300 flex items-center gap-1">Published</span>}
+                      {isPublished && <span className="px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-100 border border-green-300 flex items-center gap-1">Published</span>}
                     </div>
                     <span className="text-xs text-muted-foreground block mt-0.5">You <span className="mx-0.5">·</span> 2m ago <span className="mx-0.5">·</span> <Globe className="h-3 w-3 inline mr-1" /> rProduction</span>
                   </div>
